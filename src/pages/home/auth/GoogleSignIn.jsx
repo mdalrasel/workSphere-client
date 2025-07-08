@@ -23,7 +23,7 @@ const GoogleSignIn = () => {
             //     role: 'Employee', // সোশ্যাল লগইনের জন্য ডিফল্ট রোল 'Employee'
             //     bank_account_no: '', // ডিফল্ট বা র্যান্ডম
             //     salary: 0, // ডিফল্ট বা র্যান্ডম
-            //     designation: '', // ডিফল্ট বা র্যান্ডম
+            //     designation: '', // ডিফyyyyল্ট বা র্যান্ডম
             //     isVerified: false
             // };
             // await axios.post('/api/users', userInfo); // আপনার ব্যাকএন্ড API এন্ডপয়েন্ট

@@ -1,7 +1,7 @@
 import "@lottiefiles/lottie-player";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router"; // react-router-dom থেকে ইম্পোর্ট করুন
+import { Link, useLocation, useNavigate } from "react-router"; 
 import { updateProfile } from "firebase/auth";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -9,9 +9,11 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import GoogleSignIn from "./GoogleSignIn";
 import useAuth from "../../../hooks/useAuth";
 import Container from "../../../components/container/Container";
+import useAxiosSecure from "../../../hooks/useAxiosSecure"; 
 
 const Register = () => {
     const { createUser } = useAuth();
+    const axiosSecure = useAxiosSecure(); 
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const location = useLocation();
@@ -24,7 +26,7 @@ const Register = () => {
     } = useForm();
 
     const onSubmit = async (data) => {
-        const { name, email, password, photo } = data;
+        const { name, email, password, role, photo } = data;
 
         const imageFile = photo[0];
         const formData = new FormData();
@@ -33,29 +35,40 @@ const Register = () => {
         const uploadUrl = `https://api.imgbb.com/1/upload?key=${imgbbApiKey}`;
 
         try {
-            // 1. Upload image to imgbb
+            //  Upload image to imgbb
             const imgRes = await axios.post(uploadUrl, formData);
             if (!imgRes.data.success) throw new Error("Image upload failed");
             const imageUrl = imgRes.data.data.url;
 
-            // 2. Create user
+            //  Create user in Firebase
             const res = await createUser(email, password);
             const user = res.user;
 
-            // 3. Update Firebase profile
+            // 3️⃣ Update Firebase profile
             await updateProfile(user, {
                 displayName: name,
                 photoURL: imageUrl
             });
 
-            
+            //  Save user to DB using axiosSecure (token attach hobe)
+            await axiosSecure.post('/users', {
+                name,
+                email,
+                role,
+                photo: imageUrl,
+                designation: '',
+                salary: 0,
+                bank_account_no: '',
+                isVerified: false,
+            });
+
             Swal.fire({
                 icon: "success",
                 title: "Registration Successful",
                 text: "Welcome to the platform!",
                 confirmButtonColor: "#3085d6",
-                background: 'var(--color-bg-primary)',
-                color: 'var(--color-text-primary)'
+                background: "#1f2937",
+                color: "#f3f4f6",
             });
 
             navigate(from);
@@ -72,8 +85,8 @@ const Register = () => {
 
     return (
         <Container>
-            <div className="flex flex-col-reverse lg:flex-row justify-center items-center gap-5 min-h-[calc(100vh-200px)] py-10"> 
-                <div className="flex-1 p-6 shadow-lg rounded-lg"> 
+            <div className="flex flex-col-reverse lg:flex-row justify-center items-center gap-5 py-10 shadow-md rounded">
+                <div className="flex-1 p-6">
                     <h2 className="text-2xl font-bold text-center mb-6">Register for WorkSphere</h2>
                     <form onSubmit={handleSubmit(onSubmit)}>
                         {/* Name */}
@@ -102,11 +115,11 @@ const Register = () => {
                             type="file"
                             accept="image/*"
                             {...register("photo", { required: "Photo is required" })}
-                            className="file-input file-input-bordered file-input-sm w-full py-2 px-4 border " // Tailwind classes for styling file input
+                            className="file-input file-input-bordered file-input-sm w-full py-2 px-4 border"
                         />
                         {errors.photo && <p className="text-red-500 text-sm mt-1">{errors.photo.message}</p>}
 
-                        {/* Role Dropdown - রিকোয়ারমেন্ট অনুযায়ী এটি যোগ করতে হবে */}
+                        {/* Role */}
                         <label className="label block mt-4 mb-2 text-sm font-medium">Role</label>
                         <select
                             {...register("role", { required: "Role is required" })}
@@ -118,8 +131,7 @@ const Register = () => {
                         </select>
                         {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>}
 
-
-                        {/* Password with Toggle */}
+                        {/* Password */}
                         <label className="label block mt-4 mb-2 text-sm font-medium">Password</label>
                         <div className="relative">
                             <input
@@ -147,13 +159,12 @@ const Register = () => {
 
                         <button
                             type="submit"
-                            className="mt-5 px-6 py-2 border border-[#D8F046] font-semibold rounded-md hover:bg-[#D8F046] hover:text-black transition w-full
-                                       dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white"
+                            className="mt-5 px-6 py-2 border font-semibold rounded-md transition w-full dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white"
                         >
                             Register
                         </button>
                         <p className="mt-3 text-center text-sm ">
-                            Already have an Account? <Link to='/signIn' className="text-blue-500 hover:underline dark:text-blue-400">Login</Link>
+                            Already have an Account? <Link to='/signIn' className="text-blue-500 hover:underline dark:text-blue-400 text-xl font-bold">Login</Link>
                         </p>
                     </form>
 

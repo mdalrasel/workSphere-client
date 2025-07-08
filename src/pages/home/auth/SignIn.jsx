@@ -38,7 +38,7 @@ const SignIn = () => {
 
     return (
         <Container>
-            <div className='flex flex-col lg:flex-row items-center justify-center gap-5'>
+            <div className='flex flex-col lg:flex-row  items-center justify-center gap-5 shadow-md rounded'>
                 
                 {/* Lottie Animation */}
                 <div className="flex-1">
@@ -53,7 +53,7 @@ const SignIn = () => {
                 </div>
 
                 {/* Login Form */}
-                <div className="p-6 shadow rounded w-full max-w-md">
+                <div className="p-6  w-full max-w-md">
                     <form onSubmit={handleSubmit(onSubmit)}>
                         {/* Email */}
                         <label className="label">Email</label>
@@ -89,10 +89,10 @@ const SignIn = () => {
                         </div>
                         {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
 
-                        <div className="mt-2"><a className="link link-hover">Forgot password?</a></div>
+                        <div className="m-2"><a className="link link-hover">Forgot password?</a></div>
 
-                        <button className="mt-4 px-6 py-2 border border-[#D8F046] font-semibold rounded-md hover:bg-[#D8F046] hover:text-black transition w-full">Login</button>
-                        <p className="mt-3">Have not an account? please <Link to='/register' className="text-blue-500">Register</Link></p>
+                        <button className="mt-5 px-6 py-2 border  font-semibold rounded-md transition w-full dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white">Login</button>
+                        <p className="mt-3">Have not an account? please <Link to='/register' className="text-blue-500 text-xl font-bold hover:underline">Register</Link></p>
                     </form>
 
                     <div className="text-center py-4">

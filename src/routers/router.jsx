@@ -6,6 +6,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import Register from "../pages/home/auth/Register";
 import ContactUs from "../pages/home/contactUs/ContactUs";
 import Features from "../pages/home/features/Features";
+import DashboardLayout from "../layouts/DashboardLayout";
 
 export const router = createBrowserRouter([
   {
@@ -41,4 +42,8 @@ export const router = createBrowserRouter([
       }
     ]
   },
+  {
+    path:'dashboard',
+    Component:DashboardLayout,
+  }
 ]);

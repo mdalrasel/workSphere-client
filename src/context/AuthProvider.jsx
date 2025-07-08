@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { auth } from '../firebase/firebase.init';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth';
 import { useState } from 'react';
-import { AuthContext } from './AuthContaxt';
+import { AuthContext } from './AuthContext';
 
 const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -45,9 +45,9 @@ const AuthProvider = ({ children }) => {
 
 
     return (
-        <AuthContext value={userInfo}>
+        <AuthContext.Provider value={userInfo}>
             {children}
-        </AuthContext>
+        </AuthContext.Provider>
     );
 };
 
