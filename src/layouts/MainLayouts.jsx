@@ -1,16 +1,27 @@
 import React from 'react';
 import { Outlet } from 'react-router';
-import MainNavbar from '../components/shared/Navbar';
-import MainFooter from '../components/shared/Footer';
+import Navbar from '../components/shared/Navbar';
+import Footer from '../components/shared/Footer';
+import Container from '../components/container/Container';
 
 const MainLayouts = () => {
     return (
         <div>
-            <MainNavbar />
-            <div className='min-h-[calc(100vh-130px)]'>
+            <div className="bg-amber-200 shadow-sm fixed z-50 right-0 left-0 top-0">
+                <Container>
+                    <Navbar />
+                </Container>
+            </div>
+
+            <div className='min-h-[calc(100vh-361px)]'>
                 <Outlet />
             </div>
-            <MainFooter />
+            <div className=' shadow-inner bg-amber-100'>
+                <Container>
+                    <Footer />
+                </Container>
+            </div>
+
         </div>
     );
 };
