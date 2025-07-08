@@ -1,10 +1,180 @@
-import React from 'react';
+import "@lottiefiles/lottie-player";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useLocation, useNavigate } from "react-router"; // react-router-dom থেকে ইম্পোর্ট করুন
+import { updateProfile } from "firebase/auth";
+import Swal from "sweetalert2";
+import axios from "axios";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import GoogleSignIn from "./GoogleSignIn";
+import useAuth from "../../../hooks/useAuth";
+import Container from "../../../components/container/Container";
 
 const Register = () => {
-    return (
-        <div>
+    const { createUser } = useAuth();
+    const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
+    const location = useLocation();
+    const from = location.state?.from || '/';
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors }
+    } = useForm();
+
+    const onSubmit = async (data) => {
+        const { name, email, password, photo } = data;
+
+        const imageFile = photo[0];
+        const formData = new FormData();
+        formData.append("image", imageFile);
+        const imgbbApiKey = import.meta.env.VITE_imgbbApiKey;
+        const uploadUrl = `https://api.imgbb.com/1/upload?key=${imgbbApiKey}`;
+
+        try {
+            // 1. Upload image to imgbb
+            const imgRes = await axios.post(uploadUrl, formData);
+            if (!imgRes.data.success) throw new Error("Image upload failed");
+            const imageUrl = imgRes.data.data.url;
+
+            // 2. Create user
+            const res = await createUser(email, password);
+            const user = res.user;
+
+            // 3. Update Firebase profile
+            await updateProfile(user, {
+                displayName: name,
+                photoURL: imageUrl
+            });
+
             
-        </div>
+            Swal.fire({
+                icon: "success",
+                title: "Registration Successful",
+                text: "Welcome to the platform!",
+                confirmButtonColor: "#3085d6",
+                background: 'var(--color-bg-primary)',
+                color: 'var(--color-text-primary)'
+            });
+
+            navigate(from);
+        } catch (err) {
+            console.error("Registration Error:", err);
+            Swal.fire({
+                icon: "error",
+                title: "Registration Failed",
+                text: err.message,
+                confirmButtonColor: "#d33",
+            });
+        }
+    };
+
+    return (
+        <Container>
+            <div className="flex flex-col-reverse lg:flex-row justify-center items-center gap-5 min-h-[calc(100vh-200px)] py-10"> 
+                <div className="flex-1 p-6 shadow-lg rounded-lg"> 
+                    <h2 className="text-2xl font-bold text-center mb-6">Register for WorkSphere</h2>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        {/* Name */}
+                        <label className="label block mb-2 text-sm font-medium">Name</label>
+                        <input
+                            type="text"
+                            {...register("name", { required: "Name is required" })}
+                            className="py-2 px-4 rounded-md border w-full"
+                            placeholder="Your Name"
+                        />
+                        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
+
+                        {/* Email */}
+                        <label className="label block mt-4 mb-2 text-sm font-medium">Email</label>
+                        <input
+                            type="email"
+                            {...register("email", { required: "Email is required" })}
+                            className="py-2 px-4 rounded-md border w-full"
+                            placeholder="Your Email"
+                        />
+                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+
+                        {/* Photo */}
+                        <label className="label block mt-4 mb-2 text-sm font-medium">Photo</label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            {...register("photo", { required: "Photo is required" })}
+                            className="file-input file-input-bordered file-input-sm w-full py-2 px-4 border " // Tailwind classes for styling file input
+                        />
+                        {errors.photo && <p className="text-red-500 text-sm mt-1">{errors.photo.message}</p>}
+
+                        {/* Role Dropdown - রিকোয়ারমেন্ট অনুযায়ী এটি যোগ করতে হবে */}
+                        <label className="label block mt-4 mb-2 text-sm font-medium">Role</label>
+                        <select
+                            {...register("role", { required: "Role is required" })}
+                            className="py-2 px-4 rounded-md border w-full"
+                        >
+                            <option value="">Select a role</option>
+                            <option value="Employee">Employee</option>
+                            <option value="HR">HR</option>
+                        </select>
+                        {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>}
+
+
+                        {/* Password with Toggle */}
+                        <label className="label block mt-4 mb-2 text-sm font-medium">Password</label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                {...register("password", {
+                                    required: "Password is required",
+                                    minLength: { value: 6, message: "Password must be at least 6 characters" },
+                                    pattern: {
+                                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/,
+                                        message: "Password must include uppercase, lowercase, and a number"
+                                    }
+                                })}
+                                className="py-2 px-4 rounded-md border w-full"
+                                placeholder="Password"
+                            />
+                            <button
+                                type='button'
+                                onClick={() => setShowPassword(!showPassword)}
+                                className='absolute inset-y-0 right-3 flex items-center cursor-pointer '
+                            >
+                                {showPassword ? <FaEye /> : <FaEyeSlash />}
+                            </button>
+                        </div>
+                        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+
+                        <button
+                            type="submit"
+                            className="mt-5 px-6 py-2 border border-[#D8F046] font-semibold rounded-md hover:bg-[#D8F046] hover:text-black transition w-full
+                                       dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white"
+                        >
+                            Register
+                        </button>
+                        <p className="mt-3 text-center text-sm ">
+                            Already have an Account? <Link to='/signIn' className="text-blue-500 hover:underline dark:text-blue-400">Login</Link>
+                        </p>
+                    </form>
+
+                    <div className="text-center py-2">
+                        <p className='pb-3 '>---OR---</p>
+                        <GoogleSignIn />
+                    </div>
+                </div>
+
+                <div className="flex-1">
+                    <lottie-player
+                        autoplay
+                        controls
+                        loop
+                        mode="normal"
+                        src="/Animation1.json"
+                        class="w-80 h-100 mx-auto"
+                    />
+                </div>
+            </div>
+        </Container>
     );
 };
 

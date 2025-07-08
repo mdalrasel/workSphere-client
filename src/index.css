@@ -4,6 +4,21 @@
 @source "../.flowbite-react/class-list.json";
 
 .active{
- font-size: larger;
+ font-weight: 800;
+ color: #2563eb;
+ text-decoration-line: underline;
+}
+
+.btn-custom {
+  background-color: #2563eb;
+  color: white;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+.btn-custom:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 

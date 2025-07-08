@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "title": "Workflow Monitoring",
+    "description": "Efficiently track employee progress and workflow, ensuring no task is overlooked.",
+    "color": "blue-600"
+  },
+  {
+    "id": 2,
+    "title": "Payroll Management",
+    "description": "Ensure automated and accurate payroll processing and distribution, saving valuable time.",
+    "color": "lime-500"
+  },
+  {
+    "id": 3,
+    "title": "Contract Tracking",
+    "description": "Easily track employee contracts and their expiration dates to avoid missed renewals.",
+    "color": "indigo-500"
+  },
+  {
+    "id": 4,
+    "title": "Performance Analytics",
+    "description": "Analyze employee performance data and identify areas for improvement and growth.",
+    "color": "red-500"
+  },
+  {
+    "id": 5,
+    "title": "Team Collaboration",
+    "description": "Facilitate effective communication and cooperation among team members.",
+    "color": "purple-600"
+  },
+  {
+    "id": 6,
+    "title": "HR Support",
+    "description": "Provide quick and reliable human resources assistance to all employees.",
+    "color": "teal-500"
+  }
+]

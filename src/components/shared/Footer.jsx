@@ -10,7 +10,7 @@ const Footer = () => {
         <div className="md:flex md:justify-between md:items-start gap-8">
           {/* Logo and company description */}
           <div className="mb-6 md:mb-0 md:w-1/3">
-            <Link to="/" className="flex bg-amber-300 p-2 rounded-md items-center mb-4">
+            <Link to="/" className="flex  p-2 rounded-md items-center mb-4">
               <WorkSphereLogo />
             </Link>
             <p className=" text-sm leading-relaxed">

@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { motion } from "framer-motion";
 
-
 const WorkSphereLogo = () => {
     return (
         <motion.div
@@ -15,9 +14,9 @@ const WorkSphereLogo = () => {
                 viewBox="0 0 100 100"
                 width="50"
                 height="50"
-                className="text-teal-500"
+                className="text-blue-600"
             >
-                <circle cx="50" cy="50" r="45" fill="#14b8a6" />
+                <circle cx="50" cy="50" r="45" fill="#2563eb" /> {/* blue-600 hex */}
                 <path
                     d="M20,50 a30,10 0 1,0 60,0 a30,10 0 1,0 -60,0"
                     fill="white"
@@ -31,7 +30,7 @@ const WorkSphereLogo = () => {
                     fill="white"
                 />
             </svg>
-            <span className="text-2xl font-bold text-gray-800 dark:text-white">
+            <span className="text-2xl font-extrabold text-blue-600">
                 WorkSphere
             </span>
         </motion.div>
