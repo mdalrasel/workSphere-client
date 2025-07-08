@@ -1,5 +1,5 @@
 import "@lottiefiles/lottie-player";
-import React, { useState } from "react";
+import  { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router"; 
 import { updateProfile } from "firebase/auth";
@@ -44,7 +44,7 @@ const Register = () => {
             const res = await createUser(email, password);
             const user = res.user;
 
-            // 3️⃣ Update Firebase profile
+            // Update Firebase profile
             await updateProfile(user, {
                 displayName: name,
                 photoURL: imageUrl
@@ -65,7 +65,7 @@ const Register = () => {
             Swal.fire({
                 icon: "success",
                 title: "Registration Successful",
-                text: "Welcome to the platform!",
+                text: `Welcome ${user.displayName}`,
                 confirmButtonColor: "#3085d6",
                 background: "#1f2937",
                 color: "#f3f4f6",
