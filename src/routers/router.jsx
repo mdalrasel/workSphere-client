@@ -4,6 +4,8 @@ import Home from "../pages/home/Home";
 import SignIn from "../pages/home/auth/SignIn";
 import AuthLayout from "../layouts/AuthLayout";
 import Register from "../pages/home/auth/Register";
+import ContactUs from "../pages/home/contactUs/ContactUs";
+import Features from "../pages/home/features/Features";
 
 export const router = createBrowserRouter([
   {
@@ -14,6 +16,14 @@ export const router = createBrowserRouter([
             index:true,
             path:'/',
             Component:Home
+        },
+        {
+            path:'contact',
+            Component:ContactUs
+        },
+        {
+            path:'features',
+            Component:Features
         }
     ]
   },

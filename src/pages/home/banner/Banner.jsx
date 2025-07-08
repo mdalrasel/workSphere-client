@@ -48,7 +48,7 @@ const Banner = () => {
           data-aos-duration="800"
         >
           <Link
-            to="/register"
+            to="/dashboard"
             className="bg-blue-500 text-gray-900 px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-lg dark:bg-blue-400 dark:text-gray-900 dark:hover:bg-blue-500"
           >
             Get Started Now
