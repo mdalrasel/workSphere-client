@@ -8,6 +8,8 @@ import ContactUs from "../pages/home/contactUs/ContactUs";
 import Features from "../pages/home/features/Features";
 import DashboardLayout from "../layouts/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
+import UserProfileCard from "../components/cards/UserProfileCard";
+import DashboardHome from "../Dashboard/dashboardHome/DashboardHome";
 
 export const router = createBrowserRouter([
   {
@@ -44,7 +46,17 @@ export const router = createBrowserRouter([
     ]
   },
   {
-    path:'dashboard',
-    element:<PrivateRoute><DashboardLayout /></PrivateRoute>
+    path:'/dashboard',
+    element:<PrivateRoute><DashboardLayout /></PrivateRoute>,
+    children:[
+      {
+        index: true, 
+        Component: DashboardHome,
+      },
+      {
+        path:'profile',
+        Component:UserProfileCard
+      },
+    ]
   }
 ]);
