@@ -10,8 +10,9 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
 import UserProfileCard from "../components/cards/UserProfileCard";
 import DashboardHome from "../Dashboard/dashboardHome/DashboardHome";
-import MyWorkSheet from "../pages/employee/MyWorkSheet";
 import PaymentHistory from "../pages/employee/PaymentHistory";
+import EmployeeHome from "../pages/employee/EmployeeHome";
+import MyWorkSheet from "../pages/employee/MyWorkSheet";
 
 export const router = createBrowserRouter([
   {
@@ -64,6 +65,10 @@ export const router = createBrowserRouter([
       },
       {
         path: 'payment-history', Component: PaymentHistory
+      },
+      {
+        path:'employee-home',
+        Component:EmployeeHome
       },
     ]
   }
