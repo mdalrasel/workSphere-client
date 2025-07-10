@@ -14,6 +14,7 @@ import PaymentHistory from "../pages/employee/MyPaymentHistory";
 import EmployeeHome from "../pages/employee/EmployeeHome";
 import MyWorkSheet from "../pages/employee/MyWorkSheet";
 import MyPaymentHistory from "../pages/employee/MyPaymentHistory";
+import EmployeeList from "../pages/HR/EmployeeList";
 
 export const router = createBrowserRouter([
   {
@@ -71,6 +72,9 @@ export const router = createBrowserRouter([
         path:'employee-home',
         Component:EmployeeHome
       },
+
+      /* HR Routes */
+      {path:'employee-list',Component:EmployeeList}
     ]
   }
 ]);

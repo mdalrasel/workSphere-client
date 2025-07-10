@@ -45,8 +45,8 @@ const Sidebar = () => {
                     )}
                     {userRole === 'HR' && (
                         <>
-                            <li><Link to='/'>Dashboard</Link></li>
-                            <li><Link to='/'>Employee List</Link></li>
+                            <li><Link to=''>Dashboard</Link></li>
+                            <li><Link to='/dashboard/employee-list'>Employee List</Link></li>
                             <li><Link to='/'>Progress</Link></li>
                         </>
                     )}
