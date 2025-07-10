@@ -10,51 +10,61 @@ const GoogleSignIn = () => {
     const location = useLocation();
     const from = location.state?.from || '/';
 
-    const handleGoogleLogin = async () => {
+   const handleGoogleLogin = async () => {
+    try {
+        const result = await googleSignIn();
+        const user = result.user;
+        console.log("Google Login Success:", user);
+
+        const saveUser = {
+            name: user.displayName,
+            email: user.email,
+            role: "Employee",
+            photo: user.photoURL,
+            designation: '',
+            salary: 0,
+            bank_account_no: '',
+            isVerified: false,
+        };
+
+        // ✅ Check if user exists
+        let userExists = false;
         try {
-            const result = await googleSignIn();
-            const user = result.user;
-            console.log("Google Login Success:", user);
-
-            const saveUser = {
-                name: user.displayName,
-                email: user.email,
-                role: "Employee",
-                photo: user.photoURL,
-                designation: '',
-                salary: 0,
-                bank_account_no: '',
-                isVerified: false,
-            };
-            
-            // Check if user already exists
-            const { data: existingUser } = await axiosSecure.get(`/users?email=${user.email}`);
-
-            if (!existingUser) {
-                // Save user only if not exists
-                await axiosSecure.post('/users', saveUser);
-            }
-
-            Swal.fire({
-                icon: "success",
-                title: "Login Successful",
-                text: `Welcome ${user.displayName}`,
-                confirmButtonColor: "#3085d6",
-                background: "#1f2937",
-                color: "#f3f4f6"
-            });
-
-            navigate(from);
+            await axiosSecure.get(`/users?email=${user.email}`);
+            userExists = true;
         } catch (error) {
-            console.error("Google Login Error:", error.message);
-            Swal.fire({
-                icon: "error",
-                title: "Login Failed",
-                text: error.response?.data?.message || error.message,
-                confirmButtonColor: "#d33",
-            });
+            if (error.response?.status === 404) {
+                userExists = false;
+            } else {
+                throw error; // other errors
+            }
         }
-    };
+
+        // ✅ If user doesn't exist, create new
+        if (!userExists) {
+            await axiosSecure.post('/users', saveUser);
+        }
+
+        Swal.fire({
+            icon: "success",
+            title: "Login Successful",
+            text: `Welcome ${user.displayName}`,
+            confirmButtonColor: "#3085d6",
+            background: "#1f2937",
+            color: "#f3f4f6"
+        });
+
+        navigate(from);
+    } catch (error) {
+        console.error("Google Login Error:", error.message);
+        Swal.fire({
+            icon: "error",
+            title: "Login Failed",
+            text: error.response?.data?.message || error.message,
+            confirmButtonColor: "#d33",
+        });
+    }
+};
 
     return (
         <div>

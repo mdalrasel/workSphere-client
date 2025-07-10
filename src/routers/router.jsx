@@ -10,52 +10,60 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
 import UserProfileCard from "../components/cards/UserProfileCard";
 import DashboardHome from "../Dashboard/dashboardHome/DashboardHome";
+import MyWorkSheet from "../pages/employee/MyWorkSheet";
+import PaymentHistory from "../pages/employee/PaymentHistory";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayouts />,
-    children:[
-        {
-            index:true,
-            path:'/',
-            Component:Home
-        },
-        {
-            path:'contact',
-            Component:ContactUs
-        },
-        {
-            path:'features',
-            Component:Features
-        }
+    children: [
+      {
+        index: true,
+        path: '/',
+        Component: Home
+      },
+      {
+        path: 'contact',
+        Component: ContactUs
+      },
+      {
+        path: 'features',
+        Component: Features
+      }
     ]
   },
- {
+  {
     path: '/',
     Component: AuthLayout,
     children: [
       {
         path: 'signIn',
-        Component:SignIn
+        Component: SignIn
       },
       {
         path: 'register',
-        Component:Register
+        Component: Register
       }
     ]
   },
   {
-    path:'/dashboard',
-    element:<PrivateRoute><DashboardLayout /></PrivateRoute>,
-    children:[
+    path: '/dashboard',
+    element: <PrivateRoute><DashboardLayout /></PrivateRoute>,
+    children: [
       {
-        index: true, 
+        index: true,
         Component: DashboardHome,
       },
       {
-        path:'profile',
-        Component:UserProfileCard
+        path: 'profile',
+        Component: UserProfileCard
+      },
+      {
+        path: 'my-work-sheet', Component: MyWorkSheet
+      },
+      {
+        path: 'payment-history', Component: PaymentHistory
       },
     ]
   }

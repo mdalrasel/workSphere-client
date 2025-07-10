@@ -10,7 +10,7 @@ const Sidebar = () => {
     const axiosSecure = useAxiosSecure();
     const navigate = useNavigate();
 
-    // 🔍 Fetch user role from server
+    // Fetch user role from server
     const { data: userData, isLoading } = useQuery({
         queryKey: ['user-role', user?.email],
         enabled: !!user?.email,
