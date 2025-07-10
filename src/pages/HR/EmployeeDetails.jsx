@@ -1,0 +1,126 @@
+// src/pages/dashboard/EmployeeDetails.jsx
+import React from 'react';
+import { useParams } from 'react-router'; // URL প্যারামিটার থেকে slug নিতে
+import { useQuery } from '@tanstack/react-query';
+import useAuth from '../../hooks/useAuth';
+import useAxiosSecure from '../../hooks/useAxiosSecure';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'; // recharts ইম্পোর্ট করুন
+
+const EmployeeDetails = () => {
+    const { slug } = useParams(); // URL থেকে slug (এখানে UID) নিন
+    const { loading: authLoading } = useAuth();
+    const axiosSecure = useAxiosSecure();
+
+    // 1. Fetch employee's profile data
+    const { data: employeeData = {}, isLoading: employeeLoading, error: employeeError } = useQuery({
+        queryKey: ['employee-details', slug],
+        enabled: !!slug && !authLoading,
+        queryFn: async () => {
+            const res = await axiosSecure.get(`/users?uid=${slug}`); // UID দিয়ে ইউজার ডেটা ফেচ করুন
+            return res.data;
+        },
+    });
+
+    // 2. Fetch employee's payment history for the chart
+    const { data: payments = [], isLoading: paymentsLoading, error: paymentsError } = useQuery({
+        queryKey: ['employee-payments', slug],
+        enabled: !!slug && !authLoading,
+        queryFn: async () => {
+            const res = await axiosSecure.get(`/payments?uid=${slug}`); // UID দিয়ে পেমেন্ট ডেটা ফেচ করুন
+            return res.data;
+        },
+    });
+
+    // Chart Data Preparation
+    // রিকোয়ারমেন্ট: Salary vs. Month and Year plot
+    // ডেটা সর্ট করুন মাস এবং বছর অনুযায়ী (পুরনো থেকে নতুন)
+    const chartData = [...payments].sort((a, b) => {
+        const monthOrder = {
+            "January": 0, "February": 1, "March": 2, "April": 3, "May": 4, "June": 5,
+            "July": 6, "August": 7, "September": 8, "October": 9, "November": 10, "December": 11
+        };
+        if (a.year !== b.year) {
+            return a.year - b.year;
+        }
+        return monthOrder[a.month] - monthOrder[b.month];
+    }).map(p => ({
+        name: `${p.month.substring(0, 3)} ${p.year % 100}`, // যেমন: Jan 24
+        বেতন: p.amount,
+    }));
+
+
+    if (authLoading || employeeLoading || paymentsLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+                <span className="loading loading-spinner loading-lg text-blue-600"></span>
+            </div>
+        );
+    }
+
+    if (employeeError || paymentsError) {
+        return (
+            <div className="text-red-500 text-center py-10">
+                <p>কর্মচারীর বিস্তারিত তথ্য লোড করতে সমস্যা হয়েছে: {employeeError?.message || paymentsError?.message}</p>
+            </div>
+        );
+    }
+
+    if (!employeeData._id) { // যদি কর্মচারী ডেটা না পাওয়া যায়
+        return (
+            <div className="text-center py-10 text-gray-700 dark:text-gray-300">
+                <h3 className="text-2xl font-bold">কর্মচারী খুঁজে পাওয়া যায়নি।</h3>
+                <p className="mt-2">দয়া করে সঠিক কর্মচারীর আইডি দিয়ে চেষ্টা করুন।</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-gray-900 dark:text-white">
+            <h2 className="text-3xl font-bold mb-6 text-center">কর্মচারীর বিস্তারিত তথ্য</h2>
+
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-8 p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+                <img
+                    src={employeeData.photoURL || "https://i.ibb.co/2kRZ3mZ/default-user.png"}
+                    alt="কর্মচারীর ছবি"
+                    className="w-32 h-32 rounded-full object-cover border-4 border-blue-600 dark:border-blue-400 shadow-lg flex-shrink-0"
+                />
+                <div className="text-center md:text-left">
+                    <h3 className="text-2xl font-semibold mb-2">{employeeData.name || 'N/A'}</h3>
+                    <p className="text-gray-700 dark:text-gray-300"><strong>ইমেইল:</strong> {employeeData.email || 'N/A'}</p>
+                    <p className="text-gray-700 dark:text-gray-300"><strong>পদবী:</strong> {employeeData.designation || 'N/A'}</p>
+                    <p className="text-gray-700 dark:text-gray-300"><strong>বেতন:</strong> ${employeeData.salary ? employeeData.salary.toFixed(2) : '0.00'}</p>
+                    <p className="text-gray-700 dark:text-gray-300"><strong>ব্যাংক অ্যাকাউন্ট:</strong> {employeeData.bank_account_no || 'N/A'}</p>
+                    <p className="text-gray-700 dark:text-gray-300"><strong>যাচাইকৃত:</strong> {employeeData.isVerified ? 'হ্যাঁ ✅' : 'না ❌'}</p>
+                </div>
+            </div>
+
+            <div className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+                <h3 className="text-2xl font-semibold mb-4 text-center">বেতন বনাম মাস/বছর</h3>
+                {chartData.length === 0 ? (
+                    <p className="text-center text-gray-600 dark:text-gray-400">এই কর্মচারীর জন্য কোনো পেমেন্ট ডেটা পাওয়া যায়নি।</p>
+                ) : (
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart
+                            data={chartData}
+                            margin={{
+                                top: 20, right: 30, left: 20, bottom: 5,
+                            }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" dark:stroke="#4a4a4a" />
+                            <XAxis dataKey="name" stroke="#6b7280" dark:stroke="#9ca3af" label={{ value: 'মাস/বছর', position: 'insideBottom', offset: 0, fill: '#6b7280' }} />
+                            <YAxis stroke="#6b7280" dark:stroke="#9ca3af" label={{ value: 'বেতন ($)', angle: -90, position: 'insideLeft', fill: '#6b7280' }} />
+                            <Tooltip 
+                                contentStyle={{ backgroundColor: '#374151', border: 'none', borderRadius: '8px', color: '#fff' }}
+                                itemStyle={{ color: '#fff' }}
+                            />
+                            <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                            <Bar dataKey="বেতন" fill="#3b82f6" radius={[10, 10, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default EmployeeDetails;

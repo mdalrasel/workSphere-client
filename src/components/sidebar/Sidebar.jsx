@@ -45,9 +45,10 @@ const Sidebar = () => {
                     )}
                     {userRole === 'HR' && (
                         <>
-                            <li><Link to=''>Dashboard</Link></li>
+                            <li><Link to='/dashboard/hr-home'>Dashboard</Link></li>
                             <li><Link to='/dashboard/employee-list'>Employee List</Link></li>
-                            <li><Link to='/'>Progress</Link></li>
+                            <li><Link to='/dashboard/progress'>Progress</Link></li>
+                            <li><Link to='/dashboard/payment-history'>Payment History</Link></li>
                         </>
                     )}
                     {userRole === 'Admin' && (

@@ -10,11 +10,14 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
 import UserProfileCard from "../components/cards/UserProfileCard";
 import DashboardHome from "../Dashboard/dashboardHome/DashboardHome";
-import PaymentHistory from "../pages/employee/MyPaymentHistory";
 import EmployeeHome from "../pages/employee/EmployeeHome";
 import MyWorkSheet from "../pages/employee/MyWorkSheet";
 import MyPaymentHistory from "../pages/employee/MyPaymentHistory";
 import EmployeeList from "../pages/HR/EmployeeList";
+import EmployeeDetails from "../pages/HR/EmployeeDetails";
+import Progress from "../pages/HR/Progress";
+import PaymentHistoryHR from "../pages/HR/PaymentHistoryHR";
+import HRDashboardHome from "../pages/HR/HRDashboardHome";
 
 export const router = createBrowserRouter([
   {
@@ -74,7 +77,13 @@ export const router = createBrowserRouter([
       },
 
       /* HR Routes */
-      {path:'employee-list',Component:EmployeeList}
+      {path:'hr-home',Component:HRDashboardHome},
+      {path:'employee-list',Component:EmployeeList},
+      {path:'employee-details/:slug',Component:EmployeeDetails},
+      {path:'progress',Component:Progress},
+      {
+        path:'payment-history',Component:PaymentHistoryHR
+      }
     ]
   }
 ]);

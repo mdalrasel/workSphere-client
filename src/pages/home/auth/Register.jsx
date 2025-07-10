@@ -1,7 +1,7 @@
 import "@lottiefiles/lottie-player";
-import  { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router"; 
+import { Link, useLocation, useNavigate } from "react-router";
 import { updateProfile } from "firebase/auth";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -9,11 +9,11 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import GoogleSignIn from "./GoogleSignIn";
 import useAuth from "../../../hooks/useAuth";
 import Container from "../../../components/container/Container";
-import useAxiosSecure from "../../../hooks/useAxiosSecure"; 
+import useAxiosSecure from "../../../hooks/useAxiosSecure";
 
 const Register = () => {
     const { createUser } = useAuth();
-    const axiosSecure = useAxiosSecure(); 
+    const axiosSecure = useAxiosSecure();
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const location = useLocation();
@@ -60,6 +60,7 @@ const Register = () => {
                 salary: 0,
                 bank_account_no: '',
                 isVerified: false,
+                uid: user.uid,
             });
 
             Swal.fire({

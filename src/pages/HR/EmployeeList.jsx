@@ -1,15 +1,22 @@
 // src/pages/dashboard/EmployeeList.jsx
-import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'; // useMutation, useQueryClient ইম্পোর্ট করুন
-import Swal from 'sweetalert2'; // Swal ইম্পোর্ট করুন
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import { FaCheckCircle, FaTimesCircle, FaMoneyBillWave, FaInfoCircle } from 'react-icons/fa';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router';
 
 const EmployeeList = () => {
-    const {  loading: authLoading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const axiosSecure = useAxiosSecure();
-    const queryClient = useQueryClient(); // QueryClient নিন
+    const queryClient = useQueryClient();
+    const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+    const navigate = useNavigate();
+
+    const [isPayModalOpen, setIsPayModalOpen] = useState(false);
+    const [employeeToPay, setEmployeeToPay] = useState(null);
 
     // 1. Fetch all users (employees, HRs, Admins) from the server
     const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
@@ -39,14 +46,43 @@ const EmployeeList = () => {
                 background: '#fff',
                 color: '#1f2937'
             });
-            // ডেটা রি-ফেচ করার জন্য invalidateQueries
-            queryClient.invalidateQueries(['all-users']); // সকল ইউজার ডেটা রি-ফেচ করুন
+            queryClient.invalidateQueries(['all-users']);
         },
         onError: (error) => {
             console.error("যাচাইকরণ স্ট্যাটাস আপডেট করতে ব্যর্থ:", error);
             Swal.fire({
                 icon: "error",
                 title: "স্ট্যাটাস আপডেট ব্যর্থ",
+                text: error.response?.data?.message || "কিছু ভুল হয়েছে।",
+                confirmButtonColor: "#d33",
+                background: '#fff',
+                color: '#1f2937'
+            });
+        },
+    });
+
+    // 3. Mutation for making a payment request
+    const makePaymentRequestMutation = useMutation({
+        mutationFn: async (paymentData) => {
+            const res = await axiosSecure.post('/payment-requests', paymentData); 
+            return res.data;
+        },
+        onSuccess: () => {
+            Swal.fire({
+                icon: "success",
+                title: "বেতন পরিশোধের অনুরোধ সফলভাবে পাঠানো হয়েছে!",
+                showConfirmButton: false,
+                timer: 1500,
+                background: '#fff',
+                color: '#1f2937'
+            });
+            closePayModal();
+        },
+        onError: (error) => {
+            console.error("বেতন পরিশোধের অনুরোধ পাঠাতে ব্যর্থ:", error);
+            Swal.fire({
+                icon: "error",
+                title: "অনুরোধ পাঠাতে ব্যর্থ",
                 text: error.response?.data?.message || "কিছু ভুল হয়েছে।",
                 confirmButtonColor: "#d33",
                 background: '#fff',
@@ -75,7 +111,7 @@ const EmployeeList = () => {
         });
     };
 
-    // Placeholder for Pay function (will be implemented later)
+    // Handle Pay - Opens modal and sets form values
     const handlePay = (employee) => {
         if (!employee.isVerified) {
             Swal.fire({
@@ -88,31 +124,65 @@ const EmployeeList = () => {
             });
             return;
         }
-        console.log("Pay employee:", employee.email);
-        // Implement modal for payment here
-        Swal.fire({
-            icon: "info",
-            title: "বেতন কার্যকারিতা",
-            text: `বেতন কার্যকারিতা শীঘ্রই যোগ করা হবে ${employee.name} এর জন্য।`,
-            confirmButtonColor: "#3085d6",
-            background: '#fff',
-            color: '#1f2937'
-        });
+        setEmployeeToPay(employee);
+        setValue('salary', employee.salary || 0);
+        const today = new Date();
+        setValue('month', today.toLocaleString('default', { month: 'long' }));
+        setValue('year', today.getFullYear());
+        setIsPayModalOpen(true);
     };
 
-    // Placeholder for Details function (will be implemented later)
-    const handleDetails = (employeeEmail) => {
-        console.log("View details for:", employeeEmail);
-        // Implement navigation to details page here
-        Swal.fire({
-            icon: "info",
-            title: "বিস্তারিত কার্যকারিতা",
-            text: `বিস্তারিত কার্যকারিতা শীঘ্রই যোগ করা হবে ${employeeEmail} এর জন্য।`,
-            confirmButtonColor: "#3085d6",
-            background: '#fff',
-            color: '#1f2937'
-        });
+    // Pay form submission handler
+    const onPaySubmit = (data) => {
+        if (!employeeToPay) return;
+
+        const paymentData = {
+            employeeId: employeeToPay._id,
+            employeeUid: employeeToPay.uid,
+            employeeEmail: employeeToPay.email,
+            employeeName: employeeToPay.name,
+            amount: parseFloat(data.salary),
+            month: data.month,
+            year: parseInt(data.year),
+            requestDate: new Date().toISOString(),
+            status: 'pending',
+            requestedBy: user.email,
+        };
+        makePaymentRequestMutation.mutate(paymentData);
     };
+
+    // Modal বন্ধ করার ফাংশন
+    const closePayModal = () => {
+        setIsPayModalOpen(false);
+        setEmployeeToPay(null);
+        reset();
+    };
+
+    // Handle Details - Navigates to EmployeeDetails page
+    const handleDetails = (employeeUid) => {
+        // DEBUG: EmployeeList থেকে পাঠানো UID কনসোল করুন
+        console.log("EmployeeList - Navigating with UID:", employeeUid);
+        
+        if (!employeeUid) {
+            Swal.fire({
+                icon: "error",
+                title: "UID অনুপস্থিত!",
+                text: "এই কর্মচারীর বিস্তারিত তথ্য দেখার জন্য UID পাওয়া যায়নি। ডেটাবেস এন্ট্রি চেক করুন।",
+                confirmButtonColor: "#d33",
+                background: '#fff',
+                color: '#1f2937'
+            });
+            return;
+        }
+        navigate(`/dashboard/employee-details/${employeeUid}`);
+    };
+
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
     if (authLoading || usersLoading) {
         return (
@@ -176,7 +246,7 @@ const EmployeeList = () => {
                                             className={`p-1 rounded-full transition-colors duration-200 ${employee.isVerified ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'}`}
                                             title={employee.isVerified ? 'যাচাইকৃত: ক্লিক করে অযাচাইকৃত করুন' : 'যাচাইকৃত নয়: ক্লিক করে যাচাইকৃত করুন'}
                                             onClick={() => handleToggleVerified(employee._id, employee.isVerified)}
-                                            disabled={toggleVerifiedMutation.isLoading} // লোডিং অবস্থায় বাটন disabled
+                                            disabled={toggleVerifiedMutation.isLoading}
                                         >
                                             {employee.isVerified ? <FaCheckCircle size={20} /> : <FaTimesCircle size={20} />}
                                         </button>
@@ -191,7 +261,7 @@ const EmployeeList = () => {
                                         {/* Pay Button */}
                                         <button 
                                             className={`text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-3 p-2 rounded-md transition-opacity duration-200 ${employee.isVerified ? '' : 'opacity-50 cursor-not-allowed'}`}
-                                            disabled={!employee.isVerified} // Unverified হলে disabled
+                                            disabled={!employee.isVerified || makePaymentRequestMutation.isLoading}
                                             title={employee.isVerified ? 'বেতন দিন' : 'যাচাইকৃত নয়, বেতন দেওয়া যাবে না'}
                                             onClick={() => handlePay(employee)}
                                         >
@@ -201,7 +271,7 @@ const EmployeeList = () => {
                                         <button 
                                             className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200 p-2 rounded-md transition-colors duration-200"
                                             title="বিস্তারিত দেখুন"
-                                            onClick={() => handleDetails(employee.email)}
+                                            onClick={() => handleDetails(employee.uid)}
                                         >
                                             <FaInfoCircle size={20} />
                                         </button>
@@ -210,6 +280,90 @@ const EmployeeList = () => {
                             ))}
                         </tbody>
                     </table>
+                </div>
+            )}
+
+            {/* Pay Modal */}
+            {isPayModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative">
+                        <h3 className="text-2xl font-semibold mb-6 text-center text-gray-900 dark:text-white">বেতন পরিশোধ করুন</h3>
+                        <button
+                            onClick={closePayModal}
+                            className="absolute top-4 right-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-2xl"
+                        >
+                            &times; {/* Close button icon */}
+                        </button>
+                        <form onSubmit={handleSubmit(onPaySubmit)} className="grid grid-cols-1 gap-4">
+                            {/* Employee Name (Read-only) */}
+                            <div>
+                                <label htmlFor="employeeName" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">কর্মচারীর নাম</label>
+                                <input
+                                    type="text"
+                                    id="employeeName"
+                                    value={employeeToPay?.name || ''}
+                                    readOnly
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+                                />
+                            </div>
+                            {/* Salary (Read-only) */}
+                            <div>
+                                <label htmlFor="salary" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">বেতন</label>
+                                <input
+                                    type="number"
+                                    id="salary"
+                                    {...register('salary', { required: "বেতন আবশ্যক", min: 0 })}
+                                    readOnly // বেতন এডিট করা যাবে না, শুধু দেখা যাবে
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+                                />
+                                {errors.salary && <p className="text-red-500 text-sm mt-1">{errors.salary.message}</p>}
+                            </div>
+                            {/* Month Dropdown */}
+                            <div>
+                                <label htmlFor="month" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">মাস</label>
+                                <select
+                                    id="month"
+                                    {...register('month', { required: "মাস আবশ্যক" })}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    {months.map((month) => (
+                                        <option key={month} value={month}>{month}</option>
+                                    ))}
+                                </select>
+                                {errors.month && <p className="text-red-500 text-sm mt-1">{errors.month.message}</p>}
+                            </div>
+                            {/* Year Dropdown */}
+                            <div>
+                                <label htmlFor="year" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">বছর</label>
+                                <select
+                                    id="year"
+                                    {...register('year', { required: "বছর আবশ্যক" })}
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    {years.map((year) => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))}
+                                </select>
+                                {errors.year && <p className="text-red-500 text-sm mt-1">{errors.year.message}</p>}
+                            </div>
+                            <div className="md:col-span-2 flex justify-end gap-4 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={closePayModal}
+                                    className="bg-gray-300 text-gray-800 px-6 py-2 rounded-md font-semibold hover:bg-gray-400 transition-colors shadow-md"
+                                >
+                                    বাতিল করুন
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors shadow-md"
+                                    disabled={makePaymentRequestMutation.isLoading}
+                                >
+                                    {makePaymentRequestMutation.isLoading ? 'অনুরোধ পাঠানো হচ্ছে...' : 'বেতন পরিশোধের অনুরোধ পাঠান'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>
