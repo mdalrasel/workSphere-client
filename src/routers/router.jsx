@@ -20,6 +20,7 @@ import PaymentHistoryHR from "../pages/HR/PaymentHistoryHR";
 import HRDashboardHome from "../pages/HR/HRDashboardHome";
 import ManageUsers from "../pages/admin/ManageUsers";
 import Payroll from "../pages/admin/Payroll";
+import AdminDashboardHome from "../pages/admin/AdminDashboardHome";
 
 export const router = createBrowserRouter([
   {
@@ -79,6 +80,7 @@ export const router = createBrowserRouter([
       { path:'payment-history',Component:PaymentHistoryHR},
 
        /* Admin Routes */
+       {path:'admin-home',Component:AdminDashboardHome},
        {path:'manage-users',Component:ManageUsers},
        {path:'all-employee-list',Component:EmployeeList},
        {path:'payroll',Component:Payroll}
