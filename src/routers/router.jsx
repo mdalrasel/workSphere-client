@@ -18,6 +18,8 @@ import EmployeeDetails from "../pages/HR/EmployeeDetails";
 import Progress from "../pages/HR/Progress";
 import PaymentHistoryHR from "../pages/HR/PaymentHistoryHR";
 import HRDashboardHome from "../pages/HR/HRDashboardHome";
+import ManageUsers from "../pages/admin/ManageUsers";
+import Payroll from "../pages/admin/Payroll";
 
 export const router = createBrowserRouter([
   {
@@ -61,29 +63,25 @@ export const router = createBrowserRouter([
         index: true,
         Component: DashboardHome,
       },
-      {
-        path: 'profile',
-        Component: UserProfileCard
-      },
-      {
-        path: 'my-work-sheet', Component: MyWorkSheet
-      },
-      {
-        path: 'my-payment-history', Component: MyPaymentHistory
-      },
-      {
-        path:'employee-home',
-        Component:EmployeeHome
-      },
+     
+      {path: 'profile',Component: UserProfileCard},
+
+       /* Employee Routes */
+      {path: 'my-work-sheet', Component: MyWorkSheet},
+      {path: 'my-payment-history', Component: MyPaymentHistory},
+      {path:'employee-home',Component:EmployeeHome},
 
       /* HR Routes */
       {path:'hr-home',Component:HRDashboardHome},
       {path:'employee-list',Component:EmployeeList},
       {path:'employee-details/:slug',Component:EmployeeDetails},
       {path:'progress',Component:Progress},
-      {
-        path:'payment-history',Component:PaymentHistoryHR
-      }
+      { path:'payment-history',Component:PaymentHistoryHR},
+
+       /* Admin Routes */
+       {path:'manage-users',Component:ManageUsers},
+       {path:'all-employee-list',Component:EmployeeList},
+       {path:'payroll',Component:Payroll}
     ]
   }
 ]);

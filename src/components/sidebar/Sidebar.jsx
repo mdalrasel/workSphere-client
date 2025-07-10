@@ -53,9 +53,9 @@ const Sidebar = () => {
                     )}
                     {userRole === 'Admin' && (
                         <>
-                            <li><Link to='/'>Dashboard</Link></li>
-                            <li><Link to='/'>All Employee List</Link></li>
-                            <li><Link to='/'>Payroll</Link></li>
+                            <li><Link to='/dashboard/manage-users'>Manage User</Link></li>
+                            <li><Link to='/dashboard/all-employee-list'>Employee List</Link></li>
+                            <li><Link to='/dashboard/payroll'>Payroll</Link></li>
                         </>
                     )}
                 </ul>
