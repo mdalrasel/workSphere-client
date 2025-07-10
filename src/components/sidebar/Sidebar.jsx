@@ -40,7 +40,7 @@ const Sidebar = () => {
                         <>
                             <li><Link to='/dashboard/employee-home'>Dashboard</Link></li>
                             <li><Link to='/dashboard/my-work-sheet'>My Work Sheet</Link></li>
-                            <li><Link to=''>Payment History</Link></li>
+                            <li><Link to='/dashboard/my-payment-history'>Payment History</Link></li>
                         </>
                     )}
                     {userRole === 'HR' && (

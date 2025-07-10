@@ -1,5 +1,5 @@
 // src/pages/dashboard/MyWorkSheet.jsx
-import React, { useState, } from 'react'; // useEffect ইম্পোর্ট করুন
+import React, { useState,  } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
@@ -104,7 +104,7 @@ const MyWorkSheet = () => {
         },
     });
 
-    // 4. Mutation for updating a work (পরবর্তী ধাপে এই লজিক সম্পূর্ণ করা হবে)
+    // 4. Mutation for updating a work
     const updateWorkMutation = useMutation({
         mutationFn: async (updatedWorkData) => {
             const res = await axiosSecure.put(`/worksheets/${updatedWorkData._id}`, updatedWorkData);
@@ -119,8 +119,7 @@ const MyWorkSheet = () => {
                 background: '#fff',
                 color: '#1f2937'
             });
-            setIsEditModalOpen(false); // মোডাল বন্ধ করুন
-            setEditingWork(null); // এডিটিং স্টেট রিসেট করুন
+            closeEditModal(); // মোডাল বন্ধ করুন এবং স্টেট রিসেট করুন
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
         },
         onError: (error) => {
@@ -182,16 +181,17 @@ const MyWorkSheet = () => {
         // ফর্ম ফিল্ডগুলো প্রিলোড করুন
         setValue('task', work.task);
         setValue('hours', work.hours);
-        setSelectedDate(new Date(work.date)); // DatePicker এর জন্য Date অবজেক্ট
+        // DatePicker এর জন্য Date অবজেক্ট তৈরি করুন
+        setSelectedDate(new Date(work.date)); 
         setIsEditModalOpen(true);
     };
 
     // Update form submission handler
     const onUpdateSubmit = (data) => {
-        if (!editingWork) return;
+        if (!editingWork) return; // যদি কোনো কাজ এডিট করার জন্য নির্বাচিত না থাকে, তাহলে ফিরে যান
 
         const updatedWork = {
-            _id: editingWork._id, // MongoDB _id
+            _id: editingWork._id, // MongoDB _id অবশ্যই পাঠাতে হবে
             email: user.email,
             uid: user.uid,
             date: selectedDate.toISOString().split('T')[0], // DatePicker থেকে তারিখ
@@ -199,16 +199,16 @@ const MyWorkSheet = () => {
             hours: parseFloat(data.hours),
             month: selectedDate.toLocaleString('default', { month: 'long' }),
             year: selectedDate.getFullYear(),
-            // submissionDate অপরিবর্তিত থাকবে বা আপডেট করা যেতে পারে
+            // submissionDate অপরিবর্তিত থাকবে বা আপডেট করা যেতে পারে (রিকোয়ারমেন্টে বলা নেই)
         };
-        updateWorkMutation.mutate(updatedWork);
+        updateWorkMutation.mutate(updatedWork); // আপডেট মিউটেশন কল করুন
     };
 
     // Modal বন্ধ করার ফাংশন
     const closeEditModal = () => {
         setIsEditModalOpen(false);
         setEditingWork(null);
-        reset(); // ফর্ম রিসেট করুন
+        reset(); // ফর্ম রিসেট করুন (নতুন কাজ জমা দেওয়ার ফর্ম)
         setSelectedDate(new Date()); // DatePicker রিসেট করুন
     };
 
@@ -377,7 +377,7 @@ const MyWorkSheet = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button 
                                                 className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-3"
-                                                onClick={() => handleEdit(work)} // handleEdit ফাংশন কল করা হয়েছে
+                                                onClick={() => handleEdit(work)}
                                             >
                                                 এডিট 🖊
                                             </button>

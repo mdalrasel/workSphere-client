@@ -10,9 +10,10 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
 import UserProfileCard from "../components/cards/UserProfileCard";
 import DashboardHome from "../Dashboard/dashboardHome/DashboardHome";
-import PaymentHistory from "../pages/employee/PaymentHistory";
+import PaymentHistory from "../pages/employee/MyPaymentHistory";
 import EmployeeHome from "../pages/employee/EmployeeHome";
 import MyWorkSheet from "../pages/employee/MyWorkSheet";
+import MyPaymentHistory from "../pages/employee/MyPaymentHistory";
 
 export const router = createBrowserRouter([
   {
@@ -64,7 +65,7 @@ export const router = createBrowserRouter([
         path: 'my-work-sheet', Component: MyWorkSheet
       },
       {
-        path: 'payment-history', Component: PaymentHistory
+        path: 'my-payment-history', Component: MyPaymentHistory
       },
       {
         path:'employee-home',
