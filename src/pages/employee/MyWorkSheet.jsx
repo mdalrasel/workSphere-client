@@ -1,31 +1,22 @@
-// src/pages/dashboard/MyWorkSheet.jsx
-import React, { useState,  } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
-
-// React DatePicker এর জন্য ইম্পোর্ট
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css'; // DatePicker এর CSS ইম্পোর্ট করুন
+import 'react-datepicker/dist/react-datepicker.css'; 
 
 const MyWorkSheet = () => {
     const { user, loading } = useAuth();
     const axiosSecure = useAxiosSecure();
     const queryClient = useQueryClient();
     const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
-    
-    // Work Submission Form এর জন্য স্টেট
-    const [selectedDate, setSelectedDate] = useState(new Date()); // ডিফল্ট ভ্যালু বর্তমান তারিখ
-
-    // Edit Modal এর জন্য স্টেট
+    const [selectedDate, setSelectedDate] = useState(new Date()); 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editingWork, setEditingWork] = useState(null); // যে কাজটি এডিট করা হচ্ছে
-
+    const [editingWork, setEditingWork] = useState(null); 
     const [selectedMonth, setSelectedMonth] = useState('');
     const [selectedYear, setSelectedYear] = useState('');
-
     const taskOptions = ["Sales", "Support", "Content", "Paper-work", "Meeting", "Research"];
 
     // 1. Fetch Worksheets for the current user (filtered by month/year)
@@ -51,7 +42,7 @@ const MyWorkSheet = () => {
         onSuccess: () => {
             Swal.fire({
                 icon: "success",
-                title: "কাজ সফলভাবে জমা হয়েছে!",
+                title: "Work submitted successfully!",
                 showConfirmButton: false,
                 timer: 1500,
                 background: '#fff',
@@ -62,11 +53,11 @@ const MyWorkSheet = () => {
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
         },
         onError: (error) => {
-            console.error("কাজ জমা দিতে ব্যর্থ:", error);
+            console.error("Failed to submit work:", error);
             Swal.fire({
                 icon: "error",
-                title: "কাজ জমা দিতে ব্যর্থ",
-                text: error.response?.data?.message || "কিছু ভুল হয়েছে।",
+                title: "Work Submission Failed",
+                text: error.response?.data?.message || "Something went wrong.",
                 confirmButtonColor: "#d33",
                 background: '#fff',
                 color: '#1f2937'
@@ -83,7 +74,7 @@ const MyWorkSheet = () => {
         onSuccess: () => {
             Swal.fire({
                 icon: "success",
-                title: "কাজ সফলভাবে মুছে ফেলা হয়েছে!",
+                title: "Work successfully deleted!",
                 showConfirmButton: false,
                 timer: 1500,
                 background: '#fff',
@@ -92,11 +83,11 @@ const MyWorkSheet = () => {
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
         },
         onError: (error) => {
-            console.error("কাজ মুছতে ব্যর্থ:", error);
+            console.error("Failed to delete work:", error);
             Swal.fire({
                 icon: "error",
-                title: "কাজ মুছতে ব্যর্থ",
-                text: error.response?.data?.message || "কিছু ভুল হয়েছে।",
+                title: "Work Deletion Failed",
+                text: error.response?.data?.message || "Something went wrong.",
                 confirmButtonColor: "#d33",
                 background: '#fff',
                 color: '#1f2937'
@@ -113,21 +104,21 @@ const MyWorkSheet = () => {
         onSuccess: () => {
             Swal.fire({
                 icon: "success",
-                title: "কাজ সফলভাবে আপডেট হয়েছে!",
+                title: "Work updated successfully!",
                 showConfirmButton: false,
                 timer: 1500,
                 background: '#fff',
                 color: '#1f2937'
             });
-            closeEditModal(); // মোডাল বন্ধ করুন এবং স্টেট রিসেট করুন
+            closeEditModal();
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
         },
         onError: (error) => {
-            console.error("কাজ আপডেট করতে ব্যর্থ:", error);
+            console.error("Failed to update work:", error);
             Swal.fire({
                 icon: "error",
-                title: "কাজ আপডেট করতে ব্যর্থ",
-                text: error.response?.data?.message || "কিছু ভুল হয়েছে।",
+                title: "Work Update Failed",
+                text: error.response?.data?.message || "Something went wrong.",
                 confirmButtonColor: "#d33",
                 background: '#fff',
                 color: '#1f2937'
@@ -158,14 +149,14 @@ const MyWorkSheet = () => {
     // Delete handler
     const handleDelete = (id) => {
         Swal.fire({
-            title: "আপনি কি নিশ্চিত?",
-            text: "আপনি এই কাজের রেকর্ডটি মুছে ফেলতে চান?",
+            title: "Are you sure?",
+            text: "Do you want to delete this work record?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "হ্যাঁ, মুছে ফেলুন!",
-            cancelButtonText: "না, বাতিল করুন",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel",
             background: '#fff',
             color: '#1f2937'
         }).then((result) => {
@@ -178,38 +169,35 @@ const MyWorkSheet = () => {
     // Edit handler - Opens modal and sets form values
     const handleEdit = (work) => {
         setEditingWork(work);
-        // ফর্ম ফিল্ডগুলো প্রিলোড করুন
         setValue('task', work.task);
         setValue('hours', work.hours);
-        // DatePicker এর জন্য Date অবজেক্ট তৈরি করুন
         setSelectedDate(new Date(work.date)); 
         setIsEditModalOpen(true);
     };
 
     // Update form submission handler
     const onUpdateSubmit = (data) => {
-        if (!editingWork) return; // যদি কোনো কাজ এডিট করার জন্য নির্বাচিত না থাকে, তাহলে ফিরে যান
+        if (!editingWork) return; 
 
         const updatedWork = {
-            _id: editingWork._id, // MongoDB _id অবশ্যই পাঠাতে হবে
+            _id: editingWork._id, 
             email: user.email,
             uid: user.uid,
-            date: selectedDate.toISOString().split('T')[0], // DatePicker থেকে তারিখ
+            date: selectedDate.toISOString().split('T')[0], 
             task: data.task,
             hours: parseFloat(data.hours),
             month: selectedDate.toLocaleString('default', { month: 'long' }),
             year: selectedDate.getFullYear(),
-            // submissionDate অপরিবর্তিত থাকবে বা আপডেট করা যেতে পারে (রিকোয়ারমেন্টে বলা নেই)
         };
-        updateWorkMutation.mutate(updatedWork); // আপডেট মিউটেশন কল করুন
+        updateWorkMutation.mutate(updatedWork); 
     };
 
-    // Modal বন্ধ করার ফাংশন
+    // Function to close modal
     const closeEditModal = () => {
         setIsEditModalOpen(false);
         setEditingWork(null);
-        reset(); // ফর্ম রিসেট করুন (নতুন কাজ জমা দেওয়ার ফর্ম)
-        setSelectedDate(new Date()); // DatePicker রিসেট করুন
+        reset(); 
+        setSelectedDate(new Date()); 
     };
 
     const months = [
@@ -217,7 +205,7 @@ const MyWorkSheet = () => {
         "July", "August", "September", "October", "November", "December"
     ];
     const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
+    const years = Array.from({ length: 5 }, (_, i) => currentYear - i); // Last 5 years
 
     if (loading || isWorksheetsLoading) {
         return (
@@ -230,28 +218,28 @@ const MyWorkSheet = () => {
     if (worksheetsError) {
         return (
             <div className="text-red-500 text-center py-10">
-                <p>ডেটা লোড করতে সমস্যা হয়েছে: {worksheetsError.message}</p>
+                <p>Failed to load data: {worksheetsError.message}</p>
             </div>
         );
     }
 
     return (
         <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-gray-900 dark:text-white">
-            <h2 className="text-3xl font-bold mb-6 text-center">আমার ওয়ার্কশিট</h2>
+            <h2 className="text-3xl font-bold mb-6 text-center">My Worksheets</h2>
 
             {/* Work Submission Form */}
             <div className="mb-8 p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-                <h3 className="text-2xl font-semibold mb-4">নতুন কাজ জমা দিন</h3>
+                <h3 className="text-2xl font-semibold mb-4">Submit New Work</h3>
                 <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Tasks Dropdown */}
                     <div>
-                        <label htmlFor="task" className="block text-sm font-medium mb-1">কাজের বিবরণ</label>
+                        <label htmlFor="task" className="block text-sm font-medium mb-1">Task Description</label>
                         <select
                             id="task"
-                            {...register('task', { required: "কাজের বিবরণ আবশ্যক" })}
+                            {...register('task', { required: "Task description is required" })}
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                         >
-                            <option value="">একটি কাজ নির্বাচন করুন</option>
+                            <option value="">Select a task</option>
                             {taskOptions.map((task) => (
                                 <option key={task} value={task}>{task}</option>
                             ))}
@@ -260,30 +248,30 @@ const MyWorkSheet = () => {
                     </div>
                     {/* DatePicker */}
                     <div>
-                        <label htmlFor="date" className="block text-sm font-medium mb-1">তারিখ</label>
+                        <label htmlFor="date" className="block text-sm font-medium mb-1">Date</label>
                         <DatePicker
                             selected={selectedDate}
                             onChange={(date) => setSelectedDate(date)}
                             dateFormat="yyyy/MM/dd"
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                            placeholderText="তারিখ নির্বাচন করুন"
+                            placeholderText="Select a date"
                         />
                         {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date.message}</p>}
                     </div>
                     {/* Hours Worked */}
                     <div>
-                        <label htmlFor="hours" className="block text-sm font-medium mb-1">ঘন্টা</label>
+                        <label htmlFor="hours" className="block text-sm font-medium mb-1">Hours</label>
                         <input
                             type="number"
                             id="hours"
                             step="0.5"
                             {...register('hours', {
-                                required: "ঘন্টা আবশ্যক",
-                                min: { value: 0.5, message: "কমপক্ষে 0.5 ঘন্টা হতে হবে" },
-                                max: { value: 24, message: "সর্বোচ্চ 24 ঘন্টা হতে হবে" }
+                                required: "Hours are required",
+                                min: { value: 0.5, message: "Must be at least 0.5 hours" },
+                                max: { value: 24, message: "Must be at most 24 hours" }
                             })}
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="যেমন: 8.0"
+                            placeholder="e.g., 8.0"
                         />
                         {errors.hours && <p className="text-red-500 text-sm mt-1">{errors.hours.message}</p>}
                     </div>
@@ -293,7 +281,7 @@ const MyWorkSheet = () => {
                             className="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors shadow-md"
                             disabled={addWorkMutation.isLoading}
                         >
-                            {addWorkMutation.isLoading ? 'জমা হচ্ছে...' : 'কাজ জমা দিন'}
+                            {addWorkMutation.isLoading ? 'Submitting...' : 'Submit Work'}
                         </button>
                     </div>
                 </form>
@@ -301,33 +289,33 @@ const MyWorkSheet = () => {
 
             {/* Work History Table */}
             <div className="mb-6 p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-                <h3 className="text-2xl font-semibold mb-4">আমার কাজের ইতিহাস</h3>
+                <h3 className="text-2xl font-semibold mb-4">My Work History</h3>
 
                 {/* Filter Controls */}
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
                     <div className="flex-1">
-                        <label htmlFor="monthFilter" className="block text-sm font-medium mb-1">মাস দ্বারা ফিল্টার করুন</label>
+                        <label htmlFor="monthFilter" className="block text-sm font-medium mb-1">Filter by Month</label>
                         <select
                             id="monthFilter"
                             value={selectedMonth}
                             onChange={(e) => setSelectedMonth(e.target.value)}
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                         >
-                            <option value="">সকল মাস</option>
+                            <option value="">All Months</option>
                             {months.map((month) => (
                                 <option key={month} value={month}>{month}</option>
                             ))}
                         </select>
                     </div>
                     <div className="flex-1">
-                        <label htmlFor="yearFilter" className="block text-sm font-medium mb-1">বছর দ্বারা ফিল্টার করুন</label>
+                        <label htmlFor="yearFilter" className="block text-sm font-medium mb-1">Filter by Year</label>
                         <select
                             id="yearFilter"
                             value={selectedYear}
                             onChange={(e) => setSelectedYear(e.target.value)}
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                         >
-                            <option value="">সকল বছর</option>
+                            <option value="">All Years</option>
                             {years.map((year) => (
                                 <option key={year} value={year}>{year}</option>
                             ))}
@@ -336,26 +324,26 @@ const MyWorkSheet = () => {
                 </div>
 
                 {worksheets.length === 0 ? (
-                    <p className="text-center text-gray-600 dark:text-gray-400">কোনো কাজের রেকর্ড পাওয়া যায়নি।</p>
+                    <p className="text-center text-gray-600 dark:text-gray-400">No work records found.</p>
                 ) : (
                     <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead className="bg-gray-100 dark:bg-gray-700">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        তারিখ
+                                        Date
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        কাজের বিবরণ
+                                        Task Description
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        ঘন্টা
+                                        Hours
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        জমা দেওয়ার তারিখ
+                                        Submission Date
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        অ্যাকশন
+                                        Actions
                                     </th>
                                 </tr>
                             </thead>
@@ -379,13 +367,13 @@ const MyWorkSheet = () => {
                                                 className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-3"
                                                 onClick={() => handleEdit(work)}
                                             >
-                                                এডিট 🖊
+                                                Edit 🖊
                                             </button>
                                             <button 
                                                 className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200"
                                                 onClick={() => handleDelete(work._id)}
                                             >
-                                                ডিলিট ❌
+                                                Delete ❌
                                             </button>
                                         </td>
                                     </tr>
@@ -400,7 +388,7 @@ const MyWorkSheet = () => {
             {isEditModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md relative">
-                        <h3 className="text-2xl font-semibold mb-6 text-center text-gray-900 dark:text-white">কাজ সম্পাদনা করুন</h3>
+                        <h3 className="text-2xl font-semibold mb-6 text-center text-gray-900 dark:text-white">Edit Work</h3>
                         <button
                             onClick={closeEditModal}
                             className="absolute top-4 right-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-2xl"
@@ -410,13 +398,13 @@ const MyWorkSheet = () => {
                         <form onSubmit={handleSubmit(onUpdateSubmit)} className="grid grid-cols-1 gap-4">
                             {/* Tasks Dropdown for Edit */}
                             <div>
-                                <label htmlFor="editTask" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">কাজের বিবরণ</label>
+                                <label htmlFor="editTask" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Task Description</label>
                                 <select
                                     id="editTask"
-                                    {...register('task', { required: "কাজের বিবরণ আবশ্যক" })}
+                                    {...register('task', { required: "Task description is required" })}
                                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                                 >
-                                    <option value="">একটি কাজ নির্বাচন করুন</option>
+                                    <option value="">Select a task</option>
                                     {taskOptions.map((task) => (
                                         <option key={task} value={task}>{task}</option>
                                     ))}
@@ -425,30 +413,30 @@ const MyWorkSheet = () => {
                             </div>
                             {/* DatePicker for Edit */}
                             <div>
-                                <label htmlFor="editDate" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">তারিখ</label>
+                                <label htmlFor="editDate" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Date</label>
                                 <DatePicker
                                     selected={selectedDate}
                                     onChange={(date) => setSelectedDate(date)}
                                     dateFormat="yyyy/MM/dd"
                                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                                    placeholderText="তারিখ নির্বাচন করুন"
+                                    placeholderText="Select a date"
                                 />
                                 {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date.message}</p>}
                             </div>
                             {/* Hours Worked for Edit */}
                             <div>
-                                <label htmlFor="editHours" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">ঘন্টা</label>
+                                <label htmlFor="editHours" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Hours</label>
                                 <input
                                     type="number"
                                     id="editHours"
                                     step="0.5"
                                     {...register('hours', {
-                                        required: "ঘন্টা আবশ্যক",
-                                        min: { value: 0.5, message: "কমপক্ষে 0.5 ঘন্টা হতে হবে" },
-                                        max: { value: 24, message: "সর্বোচ্চ 24 ঘন্টা হতে হবে" }
+                                        required: "Hours are required",
+                                        min: { value: 0.5, message: "Must be at least 0.5 hours" },
+                                        max: { value: 24, message: "Must be at most 24 hours" }
                                     })}
                                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="যেমন: 8.0"
+                                    placeholder="e.g., 8.0"
                                 />
                                 {errors.hours && <p className="text-red-500 text-sm mt-1">{errors.hours.message}</p>}
                             </div>
@@ -458,14 +446,14 @@ const MyWorkSheet = () => {
                                     onClick={closeEditModal}
                                     className="bg-gray-300 text-gray-800 px-6 py-2 rounded-md font-semibold hover:bg-gray-400 transition-colors shadow-md"
                                 >
-                                    বাতিল করুন
+                                    Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     className="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors shadow-md"
                                     disabled={updateWorkMutation.isLoading}
                                 >
-                                    {updateWorkMutation.isLoading ? 'আপডেট হচ্ছে...' : 'আপডেট করুন'}
+                                    {updateWorkMutation.isLoading ? 'Updating...' : 'Update'}
                                 </button>
                             </div>
                         </form>

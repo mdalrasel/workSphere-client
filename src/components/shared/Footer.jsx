@@ -25,13 +25,13 @@ const Footer = () => {
               <h2 className="mb-6 text-sm font-semibold  uppercase ">Company</h2>
               <ul className=" font-medium">
                 <li className="mb-4">
-                  <Link to="/about" className="hover:underline">About Us</Link>
+                  <Link  className="hover:underline">About Us</Link>
                 </li>
                 <li className="mb-4">
-                  <Link to="/careers" className="hover:underline">Careers</Link>
+                  <Link  className="hover:underline">Careers</Link>
                 </li>
                 <li className="mb-4">
-                  <Link to="/blog" className="hover:underline">Blog</Link>
+                  <Link  className="hover:underline">Blog</Link>
                 </li>
               </ul>
             </div>
@@ -40,13 +40,13 @@ const Footer = () => {
               <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase ">Resources</h2>
               <ul className=" font-medium">
                 <li className="mb-4">
-                  <Link to="/features" className="hover:underline">Features</Link>
+                  <Link  className="hover:underline">Features</Link>
                 </li>
                 <li className="mb-4">
-                  <Link to="/pricing" className="hover:underline">Pricing</Link>
+                  <Link  className="hover:underline">Pricing</Link>
                 </li>
                 <li className="mb-4">
-                  <Link to="/support" className="hover:underline">Support</Link>
+                  <Link  className="hover:underline">Support</Link>
                 </li>
               </ul>
             </div>
@@ -55,10 +55,10 @@ const Footer = () => {
               <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase ">Legal</h2>
               <ul className=" font-medium">
                 <li className="mb-4">
-                  <Link to="/privacy-policy" className="hover:underline">Privacy Policy</Link>
+                  <Link  className="hover:underline">Privacy Policy</Link>
                 </li>
                 <li className="mb-4">
-                  <Link to="/terms-conditions" className="hover:underline">Terms & Conditions</Link>
+                  <Link  className="hover:underline">Terms & Conditions</Link>
                 </li>
               </ul>
             </div>

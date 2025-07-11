@@ -24,7 +24,7 @@ const DashboardLayout = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ">
         {/* Top Navbar */}
         <div className="p-4 bg-blue-100 flex items-center justify-between lg:hidden">
           <button
@@ -38,7 +38,7 @@ const DashboardLayout = () => {
 
         </div>
 
-        <div className="p-4">
+        <div className="p-4 flex-grow">
           <Outlet />
         </div>
       </div>

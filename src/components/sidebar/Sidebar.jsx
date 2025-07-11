@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import useAuth from '../../hooks/useAuth';
-import { FiHome, FiUser, FiLogOut } from 'react-icons/fi';
+import { FiLogOut } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router';
+import WorkSphereLogo from '../../utils/WorkSphereLogo';
 
 const Sidebar = () => {
     const { user, logOut } = useAuth();
@@ -23,23 +24,20 @@ const Sidebar = () => {
 
     const handleLogout = async () => {
         await logOut();
-        navigate('/');
+        navigate('/signIn');
     };
 
     if (isLoading) return <p className="text-center">Loading Sidebar...</p>;
 
     return (
-        <aside className="p-4 h-full flex flex-col justify-between">
+        <aside className="p-4 h-full flex flex-col justify-between ">
             <div>
-                <h2 className="text-xl font-bold mb-4">Dashboard</h2>
-                <ul className="space-y-1">
-                    <li><Link to='/'>Home</Link></li>
-
-
+                <h2 className="text-xl font-bold mb-4"><Link to='/' className="flex items-center"><WorkSphereLogo /></Link></h2>
+                <ul className="space-y-3 ">
                     {userRole === 'Employee' && (
                         <>
                             <li><Link to='/dashboard/employee-home'>Dashboard</Link></li>
-                            <li><Link to='/dashboard/my-work-sheet'>My Work Sheet</Link></li>
+                            <li><Link to='/dashboard/my-work-sheet'>Work Sheet</Link></li>
                             <li><Link to='/dashboard/my-payment-history'>Payment History</Link></li>
                         </>
                     )}
@@ -62,7 +60,7 @@ const Sidebar = () => {
                 </ul>
             </div>
 
-            <div className="space-y-1 pt-4 border-t">
+            <div className="space-y-1 pt-4 pb-20 border-t">
                 <li><Link to='/dashboard/profile'>Profile</Link></li>
                 <button
                     onClick={handleLogout}
