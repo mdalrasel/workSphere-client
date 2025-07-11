@@ -4,21 +4,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
-import useUserRole from '../../hooks/useUserRole'; 
+import useUserRole from '../../hooks/useUserRole';
 import { FaTrashAlt, FaUserFriends, FaUserShield, FaUserTie } from 'react-icons/fa';
 
 const ManageUsers = () => {
     const { user, loading: authLoading } = useAuth();
     const axiosSecure = useAxiosSecure();
     const queryClient = useQueryClient();
-    const { role: loggedInUserRole, isLoading: roleLoading } = useUserRole(); // লগইন করা ইউজারের রোল
+    const { role: loggedInUserRole, isLoading: roleLoading } = useUserRole(); // Logged-in user's role
 
     // 1. Fetch all users from the server
     const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
         queryKey: ['all-users-admin'],
-        enabled: !authLoading && !roleLoading && loggedInUserRole === 'Admin', // অ্যাডমিন হলে তবেই ফেচ করবে
+        enabled: !authLoading && !roleLoading && loggedInUserRole === 'Admin', // Fetch only if user is Admin
         queryFn: async () => {
-            const res = await axiosSecure.get('/users'); // এই API সকল ইউজার দেয়
+            const res = await axiosSecure.get('/users'); // This API returns all users
             return res.data;
         },
     });
@@ -32,21 +32,21 @@ const ManageUsers = () => {
         onSuccess: () => {
             Swal.fire({
                 icon: "success",
-                title: "ইউজারের রোল সফলভাবে আপডেট হয়েছে!",
+                title: "User role updated successfully!",
                 showConfirmButton: false,
                 timer: 1500,
                 background: '#fff',
                 color: '#1f2937'
             });
-            queryClient.invalidateQueries(['all-users-admin']); // ডেটা রি-ফেচ করুন
-            queryClient.invalidateQueries(['dashboard-stats']); // ড্যাশবোর্ড স্ট্যাটস আপডেট হতে পারে
+            queryClient.invalidateQueries(['all-users-admin']); // Re-fetch data
+            queryClient.invalidateQueries(['dashboard-stats']); // Dashboard stats might update
         },
         onError: (error) => {
-            console.error("ইউজারের রোল আপডেট করতে ব্যর্থ:", error);
+            console.error("Failed to update user role:", error);
             Swal.fire({
                 icon: "error",
-                title: "রোল আপডেট ব্যর্থ",
-                text: error.response?.data?.message || "কিছু ভুল হয়েছে।",
+                title: "Role Update Failed",
+                text: error.response?.data?.message || "Something went wrong.",
                 confirmButtonColor: "#d33",
                 background: '#fff',
                 color: '#1f2937'
@@ -63,21 +63,21 @@ const ManageUsers = () => {
         onSuccess: () => {
             Swal.fire({
                 icon: "success",
-                title: "ইউজার সফলভাবে মুছে ফেলা হয়েছে!",
+                title: "User successfully deleted!",
                 showConfirmButton: false,
                 timer: 1500,
                 background: '#fff',
                 color: '#1f2937'
             });
-            queryClient.invalidateQueries(['all-users-admin']); // ডেটা রি-ফেচ করুন
-            queryClient.invalidateQueries(['dashboard-stats']); // ড্যাশবোর্ড স্ট্যাটস আপডেট হতে পারে
+            queryClient.invalidateQueries(['all-users-admin']); // Re-fetch data
+            queryClient.invalidateQueries(['dashboard-stats']); // Dashboard stats might update
         },
         onError: (error) => {
-            console.error("ইউজার মুছতে ব্যর্থ:", error);
+            console.error("Failed to delete user:", error);
             Swal.fire({
                 icon: "error",
-                title: "ইউজার মোছা ব্যর্থ",
-                text: error.response?.data?.message || "কিছু ভুল হয়েছে।",
+                title: "User Deletion Failed",
+                text: error.response?.data?.message || "Something went wrong.",
                 confirmButtonColor: "#d33",
                 background: '#fff',
                 color: '#1f2937'
@@ -85,13 +85,31 @@ const ManageUsers = () => {
         },
     });
 
-    // Handle role change
-    const handleRoleChange = (id, currentRole, newRole) => {
+    // Handle role change from dropdown
+    const handleRoleChange = (userItem, event) => {
+        const newRole = event.target.value;
+        const currentRole = userItem.role;
+
+        // Prevent an admin from changing their own role
+        if (user?.email === userItem.email) {
+            Swal.fire({
+                icon: "error",
+                title: "Operation Failed",
+                text: "You cannot change your own role!",
+                confirmButtonColor: "#d33",
+                background: '#fff',
+                color: '#1f2937'
+            });
+            // Reset dropdown to current role if self-change is attempted
+            event.target.value = currentRole;
+            return;
+        }
+
         if (currentRole === newRole) {
             Swal.fire({
                 icon: "info",
-                title: "রোল একই আছে",
-                text: `এই ইউজারের রোল ইতিমধ্যেই ${newRole} সেট করা আছে।`,
+                title: "Role is already the same",
+                text: `This user's role is already set to ${newRole}.`,
                 confirmButtonColor: "#3085d6",
                 background: '#fff',
                 color: '#1f2937'
@@ -100,30 +118,33 @@ const ManageUsers = () => {
         }
 
         Swal.fire({
-            title: "আপনি কি নিশ্চিত?",
-            text: `আপনি কি এই ইউজারের রোল ${currentRole} থেকে ${newRole} এ পরিবর্তন করতে চান?`,
+            title: "Are you sure?",
+            text: `Do you want to change ${userItem.name}'s role from ${currentRole} to ${newRole}?`,
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "হ্যাঁ, পরিবর্তন করুন!",
-            cancelButtonText: "না, বাতিল করুন",
+            confirmButtonText: "Yes, change it!",
+            cancelButtonText: "No, cancel",
             background: '#fff',
             color: '#1f2937'
         }).then((result) => {
             if (result.isConfirmed) {
-                updateRoleMutation.mutate({ id, newRole });
+                updateRoleMutation.mutate({ id: userItem._id, newRole });
+            } else {
+                // If cancelled, revert the dropdown selection
+                event.target.value = currentRole;
             }
         });
     };
 
     // Handle user deletion
-    const handleDeleteUser = (id, name) => {
-        if (user?.uid === id) { // নিজের অ্যাকাউন্ট ডিলিট করতে পারবে না
+    const handleDeleteUser = (id, name, email) => {
+        if (user?.email === email) { // Cannot delete own account (comparing emails)
             Swal.fire({
                 icon: "error",
-                title: "অপারেশন ব্যর্থ",
-                text: "আপনি নিজের অ্যাকাউন্ট ডিলিট করতে পারবেন না!",
+                title: "Operation Failed",
+                text: "You cannot delete your own account!",
                 confirmButtonColor: "#d33",
                 background: '#fff',
                 color: '#1f2937'
@@ -132,14 +153,14 @@ const ManageUsers = () => {
         }
 
         Swal.fire({
-            title: "আপনি কি নিশ্চিত?",
-            text: `আপনি কি ${name} নামের এই ইউজারকে মুছে ফেলতে চান? এই অ্যাকশনটি পূর্বাবস্থায় ফেরানো যাবে না!`,
+            title: "Are you sure?",
+            text: `Do you want to delete this user named ${name}? This action cannot be undone!`,
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "হ্যাঁ, মুছে ফেলুন!",
-            cancelButtonText: "না, বাতিল করুন",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel",
             background: '#fff',
             color: '#1f2937'
         }).then((result) => {
@@ -160,43 +181,57 @@ const ManageUsers = () => {
     if (usersError) {
         return (
             <div className="text-red-500 text-center py-10">
-                <p>ব্যবহারকারী তালিকা লোড করতে সমস্যা হয়েছে: {usersError.message}</p>
+                <p>Failed to load user list: {usersError.message}</p>
             </div>
         );
     }
 
-    // যদি লগইন করা ইউজার অ্যাডমিন না হয়, তাহলে Forbidden মেসেজ দেখান
+    // If the logged-in user is not an Admin, show Forbidden message
     if (loggedInUserRole !== 'Admin') {
         return (
             <div className="text-red-500 text-center py-10">
-                <h3 className="text-2xl font-bold">প্রবেশাধিকার নেই</h3>
-                <p className="mt-2">এই পৃষ্ঠাটি শুধুমাত্র অ্যাডমিনদের জন্য উপলব্ধ।</p>
+                <h3 className="text-2xl font-bold">Access Denied</h3>
+                <p className="mt-2">This page is only available for Admins.</p>
             </div>
         );
     }
 
+    // Helper function to get role icon
+    const getRoleIcon = (role) => {
+        switch (role) {
+            case 'Employee':
+                return <FaUserTie className="inline-block mr-1" />;
+            case 'HR':
+                return <FaUserFriends className="inline-block mr-1" />;
+            case 'Admin':
+                return <FaUserShield className="inline-block mr-1" />;
+            default:
+                return null;
+        }
+    };
+
     return (
         <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-gray-900 dark:text-white">
-            <h2 className="text-3xl font-bold mb-6 text-center">ব্যবহারকারী পরিচালনা</h2>
+            <h2 className="text-3xl font-bold mb-6 text-center">Manage Users</h2>
 
             {users.length === 0 ? (
-                <p className="text-center text-gray-600 dark:text-gray-400">কোনো ব্যবহারকারী পাওয়া যায়নি।</p>
+                <p className="text-center text-gray-600 dark:text-gray-400">No users found.</p>
             ) : (
                 <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead className="bg-gray-100 dark:bg-gray-700">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    নাম
+                                    Name
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    ইমেইল
+                                    Email
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    বর্তমান রোল
+                                    Current Role
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    অ্যাকশন
+                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                    Activities {/* Changed from Actions to Activities */}
                                 </th>
                             </tr>
                         </thead>
@@ -210,44 +245,36 @@ const ManageUsers = () => {
                                         {userItem.email}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 capitalize">
-                                        {userItem.role || 'N/A'}
+                                        {getRoleIcon(userItem.role)} {userItem.role || 'N/A'}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        {/* Make Employee Button */}
-                                        <button
-                                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-2 p-2 rounded-md transition-colors duration-200"
-                                            title="Employee করুন"
-                                            onClick={() => handleRoleChange(userItem._id, userItem.role, 'Employee')}
-                                            disabled={updateRoleMutation.isLoading || userItem.role === 'Employee'}
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex items-center justify-end space-x-2">
+                                        {/* Role Change Dropdown */}
+                                        <select
+                                            className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                                            value={userItem.role || ''} // Set default value to current role
+                                            onChange={(event) => handleRoleChange(userItem, event)}
+                                            disabled={updateRoleMutation.isLoading || userItem.email === user?.email} // Disable if it's own email
+                                            title={userItem.email === user?.email ? "You cannot change your own role" : "Change user role"}
                                         >
-                                            <FaUserTie size={20} />
-                                        </button>
-                                        {/* Make HR Button */}
-                                        <button
-                                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-200 mr-2 p-2 rounded-md transition-colors duration-200"
-                                            title="HR করুন"
-                                            onClick={() => handleRoleChange(userItem._id, userItem.role, 'HR')}
-                                            disabled={updateRoleMutation.isLoading || userItem.role === 'HR'}
-                                        >
-                                            <FaUserFriends size={20} />
-                                        </button>
-                                        {/* Make Admin Button */}
-                                        <button
-                                            className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200 mr-2 p-2 rounded-md transition-colors duration-200"
-                                            title="Admin করুন"
-                                            onClick={() => handleRoleChange(userItem._id, userItem.role, 'Admin')}
-                                            disabled={updateRoleMutation.isLoading || userItem.role === 'Admin'}
-                                        >
-                                            <FaUserShield size={20} />
-                                        </button>
+                                            <option value="Employee">
+                                                <FaUserTie className="inline-block mr-1" /> Employee
+                                            </option>
+                                            <option value="HR">
+                                                <FaUserFriends className="inline-block mr-1" /> HR
+                                            </option>
+                                            <option value="Admin">
+                                                <FaUserShield className="inline-block mr-1" /> Admin
+                                            </option>
+                                        </select>
+
                                         {/* Delete User Button */}
                                         <button
-                                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200 p-2 rounded-md transition-colors duration-200"
-                                            title="ইউজার মুছুন"
-                                            onClick={() => handleDeleteUser(userItem._id, userItem.name)}
-                                            disabled={deleteUserMutation.isLoading || userItem.uid === user?.uid} // নিজের অ্যাকাউন্ট মুছতে পারবে না
+                                            className="bg-red-500 text-white px-3 py-2 rounded-md font-semibold hover:bg-red-600 transition-colors duration-200 shadow-md flex items-center justify-center"
+                                            title="Delete User" 
+                                            onClick={() => handleDeleteUser(userItem._id, userItem.name, userItem.email)}
+                                            disabled={deleteUserMutation.isLoading || userItem.email === user?.email} // Cannot delete own account (comparing emails)
                                         >
-                                            <FaTrashAlt size={20} />
+                                            <FaTrashAlt className="mr-1" /> Delete {/* Changed button text to Delete */}
                                         </button>
                                     </td>
                                 </tr>
