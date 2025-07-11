@@ -10,7 +10,6 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
 import UserProfileCard from "../components/cards/UserProfileCard";
 import DashboardHome from "../Dashboard/dashboardHome/DashboardHome";
-import EmployeeHome from "../pages/employee/EmployeeHome";
 import MyWorkSheet from "../pages/employee/MyWorkSheet";
 import MyPaymentHistory from "../pages/employee/MyPaymentHistory";
 import EmployeeList from "../pages/HR/EmployeeList";
@@ -21,6 +20,7 @@ import HRDashboardHome from "../pages/HR/HRDashboardHome";
 import ManageUsers from "../pages/admin/ManageUsers";
 import Payroll from "../pages/admin/Payroll";
 import AdminDashboardHome from "../pages/admin/AdminDashboardHome";
+import EmployeeDashboardHome from "../pages/employee/EmployeeDashboardHome";
 
 export const router = createBrowserRouter([
   {
@@ -64,26 +64,27 @@ export const router = createBrowserRouter([
         index: true,
         Component: DashboardHome,
       },
-     
-      {path: 'profile',Component: UserProfileCard},
 
-       /* Employee Routes */
-      {path: 'my-work-sheet', Component: MyWorkSheet},
-      {path: 'my-payment-history', Component: MyPaymentHistory},
-      {path:'employee-home',Component:EmployeeHome},
+      { path: 'profile', Component: UserProfileCard },
+
+      /* Employee Routes */
+      { path: 'employee-home', Component: EmployeeDashboardHome },
+      { path: 'my-work-sheet', Component: MyWorkSheet },
+      { path: 'my-payment-history', Component: MyPaymentHistory },
+
 
       /* HR Routes */
-      {path:'hr-home',Component:HRDashboardHome},
-      {path:'employee-list',Component:EmployeeList},
-      {path:'employee-details/:slug',Component:EmployeeDetails},
-      {path:'progress',Component:Progress},
-      { path:'payment-history',Component:PaymentHistoryHR},
+      { path: 'hr-home', Component: HRDashboardHome },
+      { path: 'employee-list', Component: EmployeeList },
+      { path: 'employee-details/:slug', Component: EmployeeDetails },
+      { path: 'progress', Component: Progress },
+      { path: 'payment-history', Component: PaymentHistoryHR },
 
-       /* Admin Routes */
-       {path:'admin-home',Component:AdminDashboardHome},
-       {path:'manage-users',Component:ManageUsers},
-       {path:'all-employee-list',Component:EmployeeList},
-       {path:'payroll',Component:Payroll}
+      /* Admin Routes */
+      { path: 'admin-home', Component: AdminDashboardHome },
+      { path: 'manage-users', Component: ManageUsers },
+      { path: 'all-employee-list', Component: EmployeeList },
+      { path: 'payroll', Component: Payroll }
     ]
   }
 ]);
