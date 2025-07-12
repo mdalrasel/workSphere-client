@@ -103,10 +103,10 @@ const CheckoutForm = ({ orderAmount, employeeName, employeeEmail, onPaymentSucce
                 className="mb-4 p-2 border border-gray-300 dark:border-gray-600 rounded-md" 
                 options={{
                     fields: {
-                        billingDetails: 'never', // Hides billing details like name, email, address, phone
+                        billingDetails: 'never',
                     },
                     wallets: {
-                        link: 'never', // Hides the "Link" payment option
+                        link: 'never', 
                     },
                     style: {
                         base: {

@@ -1,5 +1,4 @@
-// src/pages/dashboard/UserProfile.jsx
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
@@ -26,7 +25,6 @@ const UserProfile = () => {
     const { register, handleSubmit, setValue, formState: { errors } } = useForm();
     const [isEditing, setIsEditing] = useState(false);
 
-    // 1. Fetch user data from your server (including role, designation, bank_account_no, etc.)
     const { data: userData = {}, isLoading: userLoading, error: userError } = useQuery({
         queryKey: ['user-profile', user?.email],
         enabled: !!user?.email && !authLoading,
@@ -36,7 +34,6 @@ const UserProfile = () => {
         },
     });
 
-    // When userData loads or updates, set form fields
     useEffect(() => {
         if (userData && !userLoading) {
             setValue('name', userData.name || user?.displayName || '');
@@ -45,7 +42,6 @@ const UserProfile = () => {
         }
     }, [userData, userLoading, user, setValue]);
 
-    // 2. Mutation for updating user profile
     const updateUserMutation = useMutation({
         mutationFn: async (updatedProfileData) => {
             let photoUrlToSave = userData.photoURL || user?.photoURL || "https://i.ibb.co/2kRZ3mZ/default-user.png";

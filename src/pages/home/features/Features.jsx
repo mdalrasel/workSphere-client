@@ -83,7 +83,6 @@ const Features = () => {
     },
   ];
 
-  // অ্যানালিটিক্স চার্টের জন্য ডামি ডেটা
   const analyticsData = [
     { name: 'Jan', 'Task Completion': 70, 'Avg Score': 75 },
     { name: 'Feb', 'Task Completion': 75, 'Avg Score': 80 },
@@ -93,7 +92,6 @@ const Features = () => {
     { name: 'Jun', 'Task Completion': 88, 'Avg Score': 90 },
   ];
 
-  // ইন্টিগ্রেশন চার্টের জন্য ডামি ডেটা
   const integrationData = [
     { name: 'Accounting', Usage: 120 },
     { name: 'Communication', Usage: 98 },
@@ -101,7 +99,6 @@ const Features = () => {
     { name: 'HRIS', Usage: 50 },
   ];
 
-  // কাস্টম কালার Hex Codes, সরাসরি tailwind.config.js থেকে
   const colors = {
     primary: '#2563EB',
     secondary: '#6366F1',
@@ -182,7 +179,7 @@ const Features = () => {
               </li>
             </ul>
             <Link
-              to="/dashboard" // ড্যাশবোর্ড লিংকে যাবে
+              to="/dashboard" 
               className="mt-8 inline-flex items-center bg-primary text-neutral-text-primary-dark px-6 py-3 rounded-md font-bold hover:bg-blue-700 transition-colors shadow-md
                          dark:bg-blue-400 dark:text-neutral-text-primary-light dark:hover:bg-blue-500"
               data-aos="fade-up" data-aos-delay="500"
@@ -191,7 +188,6 @@ const Features = () => {
               <svg className="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
             </Link>
           </div>
-          {/* এখানে চার্ট যোগ করা হয়েছে */}
           <div className="lg:w-1/2 w-full h-80 lg:h-96 bg-neutral-bg-card-light dark:bg-neutral-bg-section-dark rounded-lg shadow-xl border border-neutral-border-light dark:border-neutral-border-dark p-4" data-aos="fade-left" data-aos-delay="200">
             <h3 className="text-lg font-semibold mb-4 text-neutral-text-primary-light dark:text-neutral-text-primary-dark text-center">Monthly Performance Overview</h3>
             <ResponsiveContainer width="100%" height="80%">
@@ -211,7 +207,7 @@ const Features = () => {
                   itemStyle={{ color: getComputedStyle(document.documentElement).getPropertyValue('--color-neutral-text-primary-light').trim() }}
                 />
                 <Legend wrapperStyle={{ color: getComputedStyle(document.documentElement).getPropertyValue('--color-neutral-text-primary-light').trim() }} />
-                {/* সরাসরি কাস্টম কালার Hex Code ব্যবহার করা হয়েছে */}
+                
                 <Bar dataKey="Task Completion" fill={colors.primary} />
                 <Bar dataKey="Avg Score" fill={colors.accent} />
               </BarChart>
@@ -250,7 +246,7 @@ const Features = () => {
       {/* Integration Capabilities */}
       <section className="py-16 md:py-24 bg-neutral-bg-light dark:bg-neutral-bg-section-dark">
         <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-12">
-          {/* এখানে চার্ট যোগ করা হয়েছে */}
+     
           <div className="lg:w-1/2 w-full h-80 lg:h-96 bg-neutral-bg-card-light dark:bg-neutral-bg-section-dark rounded-lg shadow-xl border border-neutral-border-light dark:border-neutral-border-dark p-4" data-aos="fade-right">
             <h3 className="text-lg font-semibold mb-4 text-neutral-text-primary-light dark:text-neutral-text-primary-dark text-center">Integration Usage by Platform</h3>
             <ResponsiveContainer width="100%" height="80%">
@@ -270,7 +266,7 @@ const Features = () => {
                   itemStyle={{ color: getComputedStyle(document.documentElement).getPropertyValue('--color-neutral-text-primary-light').trim() }}
                 />
                 <Legend wrapperStyle={{ color: getComputedStyle(document.documentElement).getPropertyValue('--color-neutral-text-primary-light').trim() }} />
-                {/* সরাসরি কাস্টম কালার Hex Code ব্যবহার করা হয়েছে */}
+              
                 <Bar dataKey="Usage" fill={colors.secondary} />
               </BarChart>
             </ResponsiveContainer>

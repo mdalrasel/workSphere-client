@@ -1,8 +1,6 @@
-import React from 'react';
+
 import { Link } from 'react-router';
-import { 
-    FaUsers, FaTasks, FaMoneyBillWave, FaDollarSign, FaHourglassHalf, 
-    FaUserTie, FaUserShield, FaUserFriends, FaChartPie, FaUserCog 
+import {  FaUsers, FaTasks, FaMoneyBillWave, FaDollarSign, FaHourglassHalf, FaUserTie, FaUserShield, FaUserFriends, FaChartPie, FaUserCog 
 } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import useAuth from '../../hooks/useAuth';
@@ -35,7 +33,6 @@ const DashboardHome = () => {
         },
     });
 
-    // Fetch employee's worksheets for the monthly hours chart (only for Employee role)
     const { data: employeeWorksheets = [], isLoading: employeeWorksheetsLoading, error: employeeWorksheetsError } = useQuery({
         queryKey: ['employee-worksheets-dashboard', user?.uid],
         enabled: !!user?.uid && !authLoading && !roleLoading && loggedInUserRole === 'Employee',
@@ -63,9 +60,6 @@ const DashboardHome = () => {
         );
     }
 
-    // --- Chart Data Preparation ---
-
-    // Common month order map for sorting
     const monthOrder = {
         "January": 0, "February": 1, "March": 2, "April": 3, "May": 4, "June": 5,
         "July": 6, "August": 7, "September": 8, "October": 9, "November": 10, "December": 11
@@ -76,14 +70,13 @@ const DashboardHome = () => {
         { name: 'Employees', value: stats.totalEmployees || 0 },
         { name: 'HRs', value: stats.totalHRs || 0 },
         { name: 'Admins', value: stats.totalAdmins || 0 },
-    ].filter(item => item.value > 0); // Only show roles with actual users
+    ].filter(item => item.value > 0); 
 
-    const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28']; // Colors for Pie Chart
+    const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28']; 
 
-    // 2. Admin/HR Salary Overview Bar Chart Data (Total Paid vs. Total Expected)
     const adminSalaryOverviewData = [
-        { name: 'Total Paid Salary', value: stats.totalSalaryPaid || 0, color: '#4CAF50' }, // Green
-        { name: 'Total Expected Salary', value: stats.totalExpectedSalary || 0, color: '#FFC107' }, // Amber
+        { name: 'Total Paid Salary', value: stats.totalSalaryPaid || 0, color: '#4CAF50' }, 
+        { name: 'Total Expected Salary', value: stats.totalExpectedSalary || 0, color: '#FFC107' }, 
     ];
 
     // 3. Employee Salary History Bar Chart Data

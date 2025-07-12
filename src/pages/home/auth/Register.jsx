@@ -50,7 +50,6 @@ const Register = () => {
                 photoURL: imageUrl
             });
 
-            //  Save user to DB using axiosSecure (token attach hobe)
             await axiosSecure.post('/users', {
                 name,
                 email,

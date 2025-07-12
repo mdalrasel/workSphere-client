@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router';
 import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn, FaGithub } from 'react-icons/fa';
 import WorkSphereLogo from '../../utils/WorkSphereLogo';

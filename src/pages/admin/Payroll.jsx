@@ -1,4 +1,4 @@
-// src/pages/dashboard/Payroll.jsx
+
 import React, { useState,  } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
@@ -21,7 +21,7 @@ const Payroll = () => {
     const [clientSecretForModal, setClientSecretForModal] = useState(null);
     const [isClientSecretLoading, setIsClientSecretLoading] = useState(false);
 
-    // 1. পেন্ডিং পেমেন্ট রিকোয়েস্ট লোড করুন
+    
     const { data: pendingPaymentRequests = [], isLoading: requestsLoading, error: requestsError } = useQuery({
         queryKey: ['pendingPaymentRequests', loggedInUserRole],
         enabled: !!user?.email && !authLoading && !roleLoading && (loggedInUserRole === 'Admin' || loggedInUserRole === 'HR'),
@@ -31,7 +31,7 @@ const Payroll = () => {
         },
     });
 
-    // 2. পেমেন্ট রিকোয়েস্ট 'approved' স্ট্যাটাসে আপডেট করার জন্য মিউটেশন
+  
     const approvePaymentRequestMutation = useMutation({
         mutationFn: async ({ requestId, transactionId }) => {
             const res = await axiosSecure.patch(`/payment-requests/approve/${requestId}`, { transactionId });
@@ -49,7 +49,8 @@ const Payroll = () => {
             queryClient.invalidateQueries(['pendingPaymentRequests']);
             queryClient.invalidateQueries(['dashboard-stats']);
             queryClient.invalidateQueries(['all-payment-history']);
-            queryClient.invalidateQueries(['my-payment-history', selectedRequest?.employeeEmail]);
+            queryClient.invalidateQueries(['my-payment-history', selectedRequest?.employeeUid]); 
+            queryClient.invalidateQueries(['dashboard-stats-employee', loggedInUserRole, selectedRequest?.employeeEmail]); // EmployeeDashboardHome এর জন্য
             setIsPaymentModalOpen(false);
             setSelectedRequest(null);
             setClientSecretForModal(null);
@@ -67,7 +68,6 @@ const Payroll = () => {
         },
     });
 
-    // 3. পেমেন্ট রিকোয়েস্ট 'rejected' স্ট্যাটাসে আপডেট করার জন্য মিউটেশন
     const rejectPaymentRequestMutation = useMutation({
         mutationFn: async (requestId) => {
             const res = await axiosSecure.patch(`/payment-requests/reject/${requestId}`);
@@ -98,7 +98,6 @@ const Payroll = () => {
         },
     });
 
-    // "Pay Salary" বাটনে ক্লিক করলে মডাল ওপেন করুন এবং clientSecret ফেচ করুন
     const handlePaySalary = async (request) => {
         setSelectedRequest(request);
         setIsPaymentModalOpen(true);
@@ -128,14 +127,12 @@ const Payroll = () => {
         }
     };
 
-    // পেমেন্ট মডাল বন্ধ করুন
     const handleClosePaymentModal = () => {
         setIsPaymentModalOpen(false);
         setSelectedRequest(null);
         setClientSecretForModal(null);
     };
 
-    // "Reject" বাটনে ক্লিক করলে
     const handleRejectRequest = (request) => {
         Swal.fire({
             title: "Are you sure?",
@@ -172,7 +169,6 @@ const Payroll = () => {
         );
     }
 
-    // শুধুমাত্র Admin বা HR রোল থাকলে এই পেজটি দেখান
     if (loggedInUserRole !== 'Admin' && loggedInUserRole !== 'HR') {
         return (
             <div className="text-red-500 text-center py-10">
@@ -214,7 +210,7 @@ const Payroll = () => {
                                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                     Status
                                 </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-right text-sm font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                                     Actions
                                 </th>
                             </tr>
@@ -309,8 +305,8 @@ const Payroll = () => {
                                 <Elements stripe={stripePromise} options={{ clientSecret: clientSecretForModal }}>
                                     <CheckoutForm
                                         orderAmount={selectedRequest.amount}
-                                        employeeName={selectedRequest.employeeName} // New prop
-                                        employeeEmail={selectedRequest.employeeEmail} // New prop
+                                        employeeName={selectedRequest.employeeName}
+                                        employeeEmail={selectedRequest.employeeEmail}
                                         onPaymentSuccess={(transactionId) => {
                                             approvePaymentRequestMutation.mutate({
                                                 requestId: selectedRequest._id,

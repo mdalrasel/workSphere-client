@@ -1,13 +1,13 @@
 // src/pages/dashboard/Progress.jsx
 
-import React, { useMemo } from 'react'; // useMemo যোগ করা হয়েছে
+import React, { useMemo } from 'react'; 
 import { useQuery } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import { useForm } from 'react-hook-form';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts'; // Recharts কম্পোনেন্টগুলো ইম্পোর্ট করা হয়েছে
+} from 'recharts';
 
 const Progress = () => {
     const { loading: authLoading } = useAuth();
@@ -38,7 +38,7 @@ const Progress = () => {
             }
             return acc;
         }, {});
-    }, [users]); // users ডেটা পরিবর্তন হলে ম্যাপ রি-ক্রিয়েট হবে
+    }, [users]); 
 
     // 2. Fetch all worksheets with filters
     const { data: worksheets = [], isLoading: worksheetsLoading, error: worksheetsError } = useQuery({
@@ -72,15 +72,13 @@ const Progress = () => {
             name: name,
             'Total Hours': employeeHours[name]
         }));
-    }, [worksheets, employeeMap]); // worksheets বা employeeMap পরিবর্তন হলে ডেটা রি-ক্যালকুলেট হবে
-
-    // Prepare filter options
+    }, [worksheets, employeeMap]); 
     const months = [
         "", "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
     const currentYear = new Date().getFullYear();
-    const years = ["", ...Array.from({ length: 5 }, (_, i) => currentYear - i)]; // From current year to 5 years back
+    const years = ["", ...Array.from({ length: 5 }, (_, i) => currentYear - i)]; 
 
     if (authLoading || usersLoading || worksheetsLoading) {
         return (
@@ -153,7 +151,7 @@ const Progress = () => {
                 </div>
             </form>
 
-            {chartData.length === 0 ? ( // chartData ব্যবহার করা হয়েছে
+            {chartData.length === 0 ? (
                 <p className="text-center text-gray-600 dark:text-gray-400">No work progress found for the selected filters.</p>
             ) : (
                 <div className="mt-8 bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow-lg">
@@ -176,10 +174,9 @@ const Progress = () => {
                             <Legend wrapperStyle={{ paddingTop: '20px', color: '#6b7280' }} className="dark:text-gray-300" />
                             <Bar 
                                 dataKey="Total Hours" 
-                                fill="#8884d8" // Default color
-                                radius={[10, 10, 0, 0]} // Rounded top corners
+                                fill="#8884d8" 
+                                radius={[10, 10, 0, 0]} 
                             >
-                                {/* Custom colors for each bar */}
                                 {
                                     chartData.map((entry, index) => (
                                         <Bar

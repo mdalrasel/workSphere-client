@@ -1,22 +1,47 @@
-import { Link } from 'react-router'; 
+import { Link } from 'react-router';
 import { FaTasks, FaMoneyBillWave, FaUserCog, FaDollarSign, FaChartPie } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import useUserRole from '../../hooks/useUserRole';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 const EmployeeDashboardHome = () => {
     const { user, loading: authLoading } = useAuth();
     const axiosSecure = useAxiosSecure();
     const { role: loggedInUserRole, isLoading: roleLoading } = useUserRole();
 
+    // Debugging logs
+    useEffect(() => {
+        console.log("EmployeeDashboardHome Component Rendered");
+        console.log("  User:", user);
+        console.log("  Auth Loading:", authLoading);
+        console.log("  Role Loading:", roleLoading);
+        console.log("  Logged In User Role:", loggedInUserRole);
+    }, [user, authLoading, roleLoading, loggedInUserRole]);
+
+    const queryEnabled = !!user?.email && !authLoading && !roleLoading && loggedInUserRole === 'Employee';
+    useEffect(() => {
+        console.log("  Query Enabled Status:", queryEnabled);
+    }, [queryEnabled]);
+
+
     // Fetch dashboard statistics for Employee
     const { data: stats = {}, isLoading: statsLoading, error: statsError } = useQuery({
-        queryKey: ['dashboard-stats-employee', loggedInUserRole],
-        enabled: !!user?.email && !authLoading && !roleLoading && loggedInUserRole === 'Employee',
+        queryKey: ['dashboard-stats-employee', loggedInUserRole, user?.email], 
+        enabled: queryEnabled,
+        staleTime: 0,
         queryFn: async () => {
-            const res = await axiosSecure.get('/dashboard-stats');
-            return res.data;
+            const url = `/dashboard-stats-employee?email=${user.email}`;
+            console.log("  Attempting to fetch Employee Dashboard Stats from URL:", url);
+            try {
+                const res = await axiosSecure.get(url);
+                console.log("  Successfully fetched Employee Dashboard Stats:", res.data);
+                return res.data;
+            } catch (fetchError) {
+                console.error("  Error fetching Employee Dashboard Stats:", fetchError.response?.status, fetchError.response?.data, fetchError.message);
+                throw fetchError;
+            }
         },
     });
 

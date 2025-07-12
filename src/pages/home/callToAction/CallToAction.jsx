@@ -1,18 +1,10 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router';
-import AOS from 'aos'; // AOS অ্যানিমেশনের জন্য
-import "aos/dist/aos.css"; // AOS CSS ইম্পোর্ট করুন
+import AOS from 'aos'; 
+import "aos/dist/aos.css";
 
 const CallToAction = () => {
   useEffect(() => {
-    // AOS অ্যানিমেশন ইনিশিয়ালাইজ করুন
-    // এটি আপনার App.jsx বা মূল লেআউট কম্পোনেন্টে একবারই কল করা উচিত।
-    // এখানে শুধু নিশ্চিত করার জন্য রাখা হয়েছে।
-    // AOS.init({
-    //   once: true,
-    //   duration: 800,
-    //   easing: 'ease-out',
-    // });
   }, []);
 
   return (

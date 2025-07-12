@@ -1,37 +1,37 @@
-// src/pages/dashboard/MyPaymentHistory.jsx
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 
 const MyPaymentHistory = () => {
-    const { user, loading: authLoading } = useAuth(); 
+    const { user, loading: authLoading } = useAuth();
     const axiosSecure = useAxiosSecure();
 
-    // 1. Fetch payment history for the current user
     const { data: payments = [], isLoading, error } = useQuery({
-        queryKey: ['my-payment-history', user?.email], 
-        enabled: !!user?.email && !authLoading, 
+        queryKey: ['my-payment-history', user?.uid], 
+        enabled: !!user?.uid && !authLoading, 
         queryFn: async () => {
-            const res = await axiosSecure.get(`/payment-requests/employee/${user.email}`); 
+            const res = await axiosSecure.get(`/payments?uid=${user.uid}`); 
             return res.data;
         },
     });
 
     // Data sorting logic
     const sortedPayments = [...payments].sort((a, b) => {
+        // A map to convert month names to numbers
         const monthOrder = {
             "January": 0, "February": 1, "March": 2, "April": 3, "May": 4, "June": 5,
             "July": 6, "August": 7, "September": 8, "October": 9, "November": 10, "December": 11
         };
 
+        // First, sort by year (older years first)
         if (a.year !== b.year) {
             return a.year - b.year;
         }
+        // If the year is the same, then sort by month (older months first)
         return monthOrder[a.month] - monthOrder[b.month];
     });
 
-    if (authLoading || isLoading) { 
+    if (authLoading || isLoading) {
         return (
             <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
                 <span className="loading loading-spinner loading-lg text-blue-600"></span>

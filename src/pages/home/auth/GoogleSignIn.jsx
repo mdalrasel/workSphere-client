@@ -25,13 +25,12 @@ const GoogleSignIn = () => {
                 salary: 0,
                 bank_account_no: '',
                 isVerified: false,
-                uid: user.uid, // <-- এখানে UID যোগ করা হয়েছে
+                uid: user.uid, 
             };
 
-            // ✅ Check if user exists
+            //  Check if user exists
             let userExists = false;
             try {
-                // UID দিয়ে ইউজার খোঁজার চেষ্টা করুন, কারণ email পরিবর্তন হতে পারে
                 const existingUserRes = await axiosSecure.get(`/users?uid=${user.uid}`);
                 if (existingUserRes.data && existingUserRes.data.uid === user.uid) {
                     userExists = true;
@@ -44,7 +43,7 @@ const GoogleSignIn = () => {
                 }
             }
 
-            // ✅ If user doesn't exist, create new
+            //  If user doesn't exist, create new
             if (!userExists) {
                 await axiosSecure.post('/users', saveUser);
             }

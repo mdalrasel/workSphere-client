@@ -1,20 +1,16 @@
-// src/pages/dashboard/DashboardHome.jsx (Renamed to HRDashboardHome for clarity)
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
-import useUserRole from '../../hooks/useUserRole'; // To get user role
+import useUserRole from '../../hooks/useUserRole'; 
 import { FaUsers, FaTasks, FaMoneyBillWave, FaDollarSign, FaHourglassHalf, FaUserTie, FaUserShield, FaUserFriends, FaChartPie } from 'react-icons/fa';
 
 const HRDashboardHome = () => {
     const { user, loading: authLoading } = useAuth();
     const axiosSecure = useAxiosSecure();
-    const { role, isLoading: roleLoading } = useUserRole(); // Fetch user role
+    const { role, isLoading: roleLoading } = useUserRole(); 
 
-    // Fetch dashboard statistics
     const { data: stats = {}, isLoading: statsLoading, error: statsError } = useQuery({
-        queryKey: ['dashboard-stats', role], // Data will re-fetch if role changes
-        enabled: !!user?.email && !authLoading && !roleLoading, // Fetch when user, auth loading, and role loading are complete
+        queryKey: ['dashboard-stats', role], 
         queryFn: async () => {
             const res = await axiosSecure.get('/dashboard-stats');
             return res.data;
@@ -109,8 +105,6 @@ const HRDashboardHome = () => {
                     </div>
                 </div>
             ) : role === 'Employee' ? (
-                // Employee Dashboard Stats (This section should ideally be in EmployeeDashboardHome.jsx)
-                // However, if DashboardHome is a generic entry point, it can display employee stats too.
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="bg-blue-100 dark:bg-blue-900 p-6 rounded-lg shadow-lg flex items-center">
                         <FaTasks className="text-blue-600 dark:text-blue-400 mr-4" size={40} />
@@ -142,7 +136,6 @@ const HRDashboardHome = () => {
                     </div>
                 </div>
             ) : (
-                // Fallback for unassigned roles or initial loading
                 <p className="text-center text-gray-600 dark:text-gray-400">No specific dashboard statistics available for your role.</p>
             )}
         </div>
