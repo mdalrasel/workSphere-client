@@ -22,7 +22,7 @@ const CheckoutForm = ({ orderAmount, employeeName, employeeEmail, onPaymentSucce
         const { error: submitError } = await elements.submit();
 
         if (submitError) {
-            console.error("elements.submit() error:", submitError);
+            
             setMessage(submitError.message);
             Swal.fire({
                 icon: "error",
@@ -66,7 +66,6 @@ const CheckoutForm = ({ orderAmount, employeeName, employeeEmail, onPaymentSucce
             } else {
                 setMessage("An unexpected error occurred.");
             }
-            console.error("Stripe confirmPayment error:", confirmPaymentError);
             Swal.fire({
                 icon: "error",
                 title: "Payment Failed!",
@@ -77,7 +76,6 @@ const CheckoutForm = ({ orderAmount, employeeName, employeeEmail, onPaymentSucce
             });
             onPaymentError(confirmPaymentError.message || "Payment failed.");
         } else {
-            console.log("Payment Intent confirmed:", paymentIntent);
             setMessage("Payment successful!");
             Swal.fire({
                 icon: "success",

@@ -1,12 +1,20 @@
-import {  Outlet } from 'react-router';
+import { Outlet } from 'react-router';
 import { useState } from 'react';
 import { FaBars } from 'react-icons/fa';
 import Sidebar from '../components/sidebar/Sidebar';
 import useAuth from '../hooks/useAuth';
 
 const DashboardLayout = () => {
-  const {user}=useAuth()
+  const { user, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-blue-600"></span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -18,27 +26,24 @@ const DashboardLayout = () => {
       {/* Overlay for mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0  z-40 lg:hidden"
+          className="fixed inset-0 z-40 lg:hidden"
           onClick={() => setIsOpen(false)}
         ></div>
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col ">
+      <div className="flex-1 flex flex-col">
         {/* Top Navbar */}
         <div className="p-4 bg-blue-100 flex items-center justify-between lg:hidden">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className=""
           >
             <FaBars size={24} />
           </button>
-          <h3 className='font-bold'>{ user?.displayName  } !</h3>
-          
-
+          <h3 className="font-bold">{user?.displayName} !</h3>
         </div>
 
-        <div className="p-4 flex-grow">
+        <div className="p-4">
           <Outlet />
         </div>
       </div>

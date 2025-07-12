@@ -73,7 +73,6 @@ const Register = () => {
 
             navigate(from);
         } catch (err) {
-            console.error("Registration Error:", err);
             Swal.fire({
                 icon: "error",
                 title: "Registration Failed",

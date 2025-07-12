@@ -39,7 +39,6 @@ const Navbar = () => {
     const handleLogout = () => {
         logOut()
             .then(() => {
-                console.log("Logged out");
                  navigate('/signIn');
             })
             .catch(err => {

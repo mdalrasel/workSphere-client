@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 
 const Progress = () => {
-    const { loading: authLoading } = useAuth();
+   const { loading: authLoading, user } = useAuth(); 
     const axiosSecure = useAxiosSecure();
     const { register, watch } = useForm();
 
@@ -80,13 +80,13 @@ const Progress = () => {
     const currentYear = new Date().getFullYear();
     const years = ["", ...Array.from({ length: 5 }, (_, i) => currentYear - i)]; 
 
-    if (authLoading || usersLoading || worksheetsLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <span className="loading loading-spinner loading-lg text-blue-600"></span>
-            </div>
-        );
-    }
+    if (authLoading || usersLoading || worksheetsLoading || !user) {
+    return (
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+            <span className="loading loading-spinner loading-lg text-blue-600"></span>
+        </div>
+    );
+}
 
     if (usersError || worksheetsError) {
         return (

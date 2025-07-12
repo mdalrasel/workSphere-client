@@ -50,13 +50,12 @@ const Payroll = () => {
             queryClient.invalidateQueries(['dashboard-stats']);
             queryClient.invalidateQueries(['all-payment-history']);
             queryClient.invalidateQueries(['my-payment-history', selectedRequest?.employeeUid]); 
-            queryClient.invalidateQueries(['dashboard-stats-employee', loggedInUserRole, selectedRequest?.employeeEmail]); // EmployeeDashboardHome এর জন্য
+            queryClient.invalidateQueries(['dashboard-stats-employee', loggedInUserRole, selectedRequest?.employeeEmail]); 
             setIsPaymentModalOpen(false);
             setSelectedRequest(null);
             setClientSecretForModal(null);
         },
         onError: (error) => {
-            console.error("Failed to approve payment request:", error);
             Swal.fire({
                 icon: "error",
                 title: "Payment Approval Failed",
@@ -86,7 +85,6 @@ const Payroll = () => {
             queryClient.invalidateQueries(['dashboard-stats']);
         },
         onError: (error) => {
-            console.error("Failed to reject payment request:", error);
             Swal.fire({
                 icon: "error",
                 title: "Payment Rejection Failed",
@@ -110,9 +108,7 @@ const Payroll = () => {
                 userId: request.employeeUid,
             });
             setClientSecretForModal(res.data.clientSecret);
-            console.log("clientSecret fetched successfully:", res.data.clientSecret);
         } catch (error) {
-            console.error("Error fetching client secret for modal:", error.response?.data || error.message);
             Swal.fire({
                 icon: "error",
                 title: "Payment Initialization Failed",
@@ -314,7 +310,6 @@ const Payroll = () => {
                                             });
                                         }}
                                         onPaymentError={(errorMessage) => {
-                                            console.error("Payment failed:", errorMessage);
                                             Swal.fire({
                                                 icon: "error",
                                                 title: "Payment Failed",

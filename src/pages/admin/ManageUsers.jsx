@@ -40,7 +40,6 @@ const ManageUsers = () => {
             queryClient.invalidateQueries(['dashboard-stats']); 
         },
         onError: (error) => {
-            console.error("Failed to update user role:", error);
             Swal.fire({
                 icon: "error",
                 title: "Role Update Failed",
@@ -71,7 +70,6 @@ const ManageUsers = () => {
             queryClient.invalidateQueries(['dashboard-stats']); 
         },
         onError: (error) => {
-            console.error("Failed to delete user:", error);
             Swal.fire({
                 icon: "error",
                 title: "User Deletion Failed",

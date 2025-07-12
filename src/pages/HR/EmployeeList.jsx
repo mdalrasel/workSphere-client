@@ -47,7 +47,6 @@ const EmployeeList = () => {
             queryClient.invalidateQueries(['all-users']);
         },
         onError: (error) => {
-            console.error("Failed to update verification status:", error);
             Swal.fire({
                 icon: "error",
                 title: "Status Update Failed",
@@ -77,7 +76,6 @@ const EmployeeList = () => {
             closePayModal();
         },
         onError: (error) => {
-            console.error("Failed to send payment request:", error);
             Swal.fire({
                 icon: "error",
                 title: "Request Failed",
@@ -157,7 +155,6 @@ const EmployeeList = () => {
 
     // Handle Details - Navigates to EmployeeDetails page
     const handleDetails = (employeeUid) => {
-        console.log("EmployeeList - Navigating with UID:", employeeUid);
         
         if (!employeeUid) {
             Swal.fire({

@@ -34,7 +34,6 @@ const SignIn = () => {
 
             navigate(from);
         } catch (error) {
-            console.error(error);
             const errorCode = error.code;
 
             if (errorCode === 'auth/user-not-found') {

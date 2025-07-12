@@ -62,7 +62,7 @@ const UserProfile = () => {
                 const formData = new FormData();
                 formData.append('image', updatedProfileData.imageFile[0]);
                 try {
-                    console.log("Attempting to upload image to ImgBB...");
+                   
                     const imgbbRes = await axios.post(image_hosting_api, formData, {
                         headers: {
                             'content-type': 'multipart/form-data',
@@ -70,13 +70,13 @@ const UserProfile = () => {
                     });
                     if (imgbbRes.data.success) {
                         photoUrlToSave = imgbbRes.data.data.display_url;
-                        console.log("Image uploaded to ImgBB. URL:", photoUrlToSave);
+                       
                     } else {
-                        console.error("ImgBB upload response not successful:", imgbbRes.data);
+                        
                         throw new Error(`Image upload failed: ${imgbbRes.data.error?.message || 'ImgBB response not successful'}`);
                     }
                 } catch (imgError) {
-                    console.error("Image upload error caught:", imgError);
+                   
                     Swal.fire({
                         icon: "error",
                         title: "Image Upload Failed",
@@ -95,8 +95,6 @@ const UserProfile = () => {
                 designation: updatedProfileData.designation,
                 bank_account_no: updatedProfileData.bank_account_no,
             };
-            console.log("Sending update payload to server:", payloadToSend);
-            console.log("Target URL:", `/users/${user.email}`);
 
             const res = await axiosSecure.put(`/users/${user.email}`, payloadToSend);
             return res.data;
@@ -118,9 +116,6 @@ const UserProfile = () => {
             queryClient.invalidateQueries(['all-users-for-progress']); // Invalidate HR's progress user list
         },
         onError: (error) => {
-            console.error("Failed to update profile (full error):", error);
-            console.error("Error response data:", error.response?.data);
-            console.error("Error response status:", error.response?.status);
             Swal.fire({
                 icon: "error",
                 title: "Profile Update Failed",

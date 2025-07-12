@@ -53,7 +53,6 @@ const MyWorkSheet = () => {
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
         },
         onError: (error) => {
-            console.error("Failed to submit work:", error);
             Swal.fire({
                 icon: "error",
                 title: "Work Submission Failed",
@@ -83,7 +82,6 @@ const MyWorkSheet = () => {
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
         },
         onError: (error) => {
-            console.error("Failed to delete work:", error);
             Swal.fire({
                 icon: "error",
                 title: "Work Deletion Failed",
@@ -114,7 +112,6 @@ const MyWorkSheet = () => {
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
         },
         onError: (error) => {
-            console.error("Failed to update work:", error);
             Swal.fire({
                 icon: "error",
                 title: "Work Update Failed",
@@ -454,7 +451,7 @@ const MyWorkSheet = () => {
                                     disabled={updateWorkMutation.isLoading}
                                 >
                                     {updateWorkMutation.isLoading ? 'Updating...' : 'Update'}
-                                </button>
+                                </button>ac
                             </div>
                         </form>
                     </div>

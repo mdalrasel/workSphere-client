@@ -14,7 +14,6 @@ const GoogleSignIn = () => {
         try {
             const result = await googleSignIn();
             const user = result.user;
-            console.log("Google Login Success:", user);
 
             const saveUser = {
                 name: user.displayName,
@@ -59,7 +58,6 @@ const GoogleSignIn = () => {
 
             navigate(from);
         } catch (error) {
-            console.error("Google Login Error:", error.message);
             Swal.fire({
                 icon: "error",
                 title: "Login Failed",

@@ -19,7 +19,6 @@ const useUserRole = () => {
                
                 return res.data.role; 
             } catch (err) {
-                console.error("Error fetching user role:", err);
                 if (err.response?.status === 404) {
                     return null; 
                 }
