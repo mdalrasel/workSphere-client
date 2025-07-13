@@ -5,7 +5,8 @@ import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import { FaCheckCircle, FaTimesCircle, FaMoneyBillWave, FaInfoCircle } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router'; 
+import { useNavigate, Link } from 'react-router'; // 'react-router' থেকে 'react-router-dom' এ পরিবর্তন করা হয়েছে
+import LoadingSpinner from '../../utils/LoadingSpinner';
 
 const EmployeeList = () => {
     const { user, loading: authLoading } = useAuth();
@@ -20,7 +21,7 @@ const EmployeeList = () => {
     // 1. Fetch all users (employees, HRs, Admins) from the server
     const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
         queryKey: ['all-users'],
-        enabled: !authLoading,
+        enabled: !authLoading, // Ensure query is enabled only when auth is not loading
         queryFn: async () => {
             const res = await axiosSecure.get('/users');
             return res.data;
@@ -44,7 +45,7 @@ const EmployeeList = () => {
                 background: '#fff',
                 color: '#1f2937'
             });
-            queryClient.invalidateQueries(['all-users']);
+            queryClient.invalidateQueries(['all-users']); // Invalidate to refetch updated user list
         },
         onError: (error) => {
             Swal.fire({
@@ -74,6 +75,8 @@ const EmployeeList = () => {
                 color: '#1f2937'
             });
             closePayModal();
+            // Invalidate payroll queries if necessary, though this is for HR/Admin payroll page
+            queryClient.invalidateQueries(['pendingPaymentRequests']); 
         },
         onError: (error) => {
             Swal.fire({
@@ -179,9 +182,7 @@ const EmployeeList = () => {
 
     if (authLoading || usersLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <span className="loading loading-spinner loading-lg text-blue-600"></span>
-            </div>
+            <LoadingSpinner />
         );
     }
 

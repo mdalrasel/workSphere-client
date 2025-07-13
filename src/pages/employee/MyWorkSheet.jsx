@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
@@ -6,6 +6,7 @@ import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css'; 
+import LoadingSpinner from '../../utils/LoadingSpinner';
 
 const MyWorkSheet = () => {
     const { user, loading } = useAuth();
@@ -206,9 +207,7 @@ const MyWorkSheet = () => {
 
     if (loading || isWorksheetsLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <span className="loading loading-spinner loading-lg text-blue-600"></span>
-            </div>
+            <LoadingSpinner />
         );
     }
 
@@ -451,7 +450,7 @@ const MyWorkSheet = () => {
                                     disabled={updateWorkMutation.isLoading}
                                 >
                                     {updateWorkMutation.isLoading ? 'Updating...' : 'Update'}
-                                </button>ac
+                                </button>
                             </div>
                         </form>
                     </div>

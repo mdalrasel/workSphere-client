@@ -4,19 +4,20 @@ import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import useUserRole from '../../hooks/useUserRole';
 import { FaTrashAlt, FaUserFriends, FaUserShield, FaUserTie } from 'react-icons/fa';
+import LoadingSpinner from '../../utils/LoadingSpinner';
 
 const ManageUsers = () => {
     const { user, loading: authLoading } = useAuth();
     const axiosSecure = useAxiosSecure();
     const queryClient = useQueryClient();
-    const { role: loggedInUserRole, isLoading: roleLoading } = useUserRole(); 
+    const { role: loggedInUserRole, isLoading: roleLoading } = useUserRole();
 
     // 1. Fetch all users from the server
     const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
         queryKey: ['all-users-admin'],
-        enabled: !authLoading && !roleLoading && loggedInUserRole === 'Admin', 
+        enabled: !authLoading && !roleLoading && loggedInUserRole === 'Admin',
         queryFn: async () => {
-            const res = await axiosSecure.get('/users'); 
+            const res = await axiosSecure.get('/users');
             return res.data;
         },
     });
@@ -36,8 +37,8 @@ const ManageUsers = () => {
                 background: '#fff',
                 color: '#1f2937'
             });
-            queryClient.invalidateQueries(['all-users-admin']); 
-            queryClient.invalidateQueries(['dashboard-stats']); 
+            queryClient.invalidateQueries(['all-users-admin']);
+            queryClient.invalidateQueries(['dashboard-stats']);
         },
         onError: (error) => {
             Swal.fire({
@@ -66,8 +67,8 @@ const ManageUsers = () => {
                 background: '#fff',
                 color: '#1f2937'
             });
-            queryClient.invalidateQueries(['all-users-admin']); 
-            queryClient.invalidateQueries(['dashboard-stats']); 
+            queryClient.invalidateQueries(['all-users-admin']);
+            queryClient.invalidateQueries(['dashboard-stats']);
         },
         onError: (error) => {
             Swal.fire({
@@ -136,7 +137,7 @@ const ManageUsers = () => {
 
     // Handle user deletion
     const handleDeleteUser = (id, name, email) => {
-        if (user?.email === email) { 
+        if (user?.email === email) {
             Swal.fire({
                 icon: "error",
                 title: "Operation Failed",
@@ -168,9 +169,7 @@ const ManageUsers = () => {
 
     if (authLoading || usersLoading || roleLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <span className="loading loading-spinner loading-lg text-blue-600"></span>
-            </div>
+            <LoadingSpinner />
         );
     }
 
@@ -227,7 +226,7 @@ const ManageUsers = () => {
                                     Current Role
                                 </th>
                                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Activities 
+                                    Activities
                                 </th>
                             </tr>
                         </thead>
@@ -249,27 +248,27 @@ const ManageUsers = () => {
                                             className="p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                                             value={userItem.role || ''}
                                             onChange={(event) => handleRoleChange(userItem, event)}
-                                            disabled={updateRoleMutation.isLoading || userItem.email === user?.email} 
+                                            disabled={updateRoleMutation.isLoading || userItem.email === user?.email}
                                             title={userItem.email === user?.email ? "You cannot change your own role" : "Change user role"}
                                         >
                                             <option value="Employee">
-                                                <FaUserTie className="inline-block mr-1" /> Employee
+                                                Employee
                                             </option>
                                             <option value="HR">
-                                                <FaUserFriends className="inline-block mr-1" /> HR
+                                                HR
                                             </option>
                                             <option value="Admin">
-                                                <FaUserShield className="inline-block mr-1" /> Admin
+                                                Admin
                                             </option>
                                         </select>
 
                                         <button
                                             className="bg-red-500 text-white px-3 py-2 rounded-md font-semibold hover:bg-red-600 transition-colors duration-200 shadow-md flex items-center justify-center"
-                                            title="Delete User" 
+                                            title="Delete User"
                                             onClick={() => handleDeleteUser(userItem._id, userItem.name, userItem.email)}
-                                            disabled={deleteUserMutation.isLoading || userItem.email === user?.email} 
+                                            disabled={deleteUserMutation.isLoading || userItem.email === user?.email}
                                         >
-                                            <FaTrashAlt className="mr-1" /> Delete 
+                                            <FaTrashAlt className="mr-1" /> Delete
                                         </button>
                                     </td>
                                 </tr>

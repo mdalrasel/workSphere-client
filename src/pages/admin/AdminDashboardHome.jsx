@@ -4,6 +4,7 @@ import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import useUserRole from '../../hooks/useUserRole';
 import { useQuery } from '@tanstack/react-query';
+import LoadingSpinner from '../../utils/LoadingSpinner';
 
 const AdminDashboardHome = () => {
     const { user, loading: authLoading } = useAuth();
@@ -22,9 +23,7 @@ const AdminDashboardHome = () => {
 
     if (authLoading || roleLoading || statsLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <span className="loading loading-spinner loading-lg text-blue-600"></span>
-            </div>
+            <LoadingSpinner />
         );
     }
 

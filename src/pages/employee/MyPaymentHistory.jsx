@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
+import LoadingSpinner from '../../utils/LoadingSpinner';
 
 const MyPaymentHistory = () => {
     const { user, loading: authLoading } = useAuth();
@@ -33,9 +34,7 @@ const MyPaymentHistory = () => {
 
     if (authLoading || isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <span className="loading loading-spinner loading-lg text-blue-600"></span>
-            </div>
+            <LoadingSpinner />
         );
     }
 

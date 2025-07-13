@@ -1,10 +1,11 @@
-import { Link } from 'react-router';
+import { Link } from 'react-router'; // 'react-router' থেকে 'react-router-dom' এ পরিবর্তন করা হয়েছে
 import { FaTasks, FaMoneyBillWave, FaUserCog, FaDollarSign, FaChartPie } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import useUserRole from '../../hooks/useUserRole';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import LoadingSpinner from '../../utils/LoadingSpinner';
 
 const EmployeeDashboardHome = () => {
     const { user, loading: authLoading } = useAuth();
@@ -31,7 +32,7 @@ const EmployeeDashboardHome = () => {
                 const res = await axiosSecure.get(url);
                 return res.data;
             } catch (fetchError) {
-                console.error("  Error fetching Employee Dashboard Stats:", fetchError.response?.status, fetchError.response?.data, fetchError.message);
+                console.error("Error fetching Employee Dashboard Stats:", fetchError.response?.status, fetchError.response?.data, fetchError.message);
                 throw fetchError;
             }
         },
@@ -39,9 +40,7 @@ const EmployeeDashboardHome = () => {
 
     if (authLoading || roleLoading || statsLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <span className="loading loading-spinner loading-lg text-blue-600"></span>
-            </div>
+           <LoadingSpinner />
         );
     }
 

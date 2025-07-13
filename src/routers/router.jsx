@@ -22,23 +22,23 @@ import Payroll from "../pages/admin/Payroll";
 import AdminDashboardHome from "../pages/admin/AdminDashboardHome";
 import EmployeeDashboardHome from "../pages/employee/EmployeeDashboardHome";
 
+
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayouts />,
     children: [
-      {
+       {
         index: true,
-        path: '/',
-        Component: Home
+        Component:Home
       },
       {
         path: 'contact',
-        Component: ContactUs
+        Component:ContactUs
       },
       {
         path: 'features',
-        Component: Features
+        Component:Features
       }
     ]
   },

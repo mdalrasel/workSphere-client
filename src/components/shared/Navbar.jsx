@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { IoMenu } from "react-icons/io5";
-import { Link, NavLink, useNavigate } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router"; 
 import WorkSphereLogo from "../../utils/WorkSphereLogo";
 import useAuth from "../../hooks/useAuth";
 
@@ -11,35 +11,47 @@ const Navbar = () => {
     const navigate = useNavigate();
 
     const dropdownRef = useRef(null); 
-
-    
+    const menuRef = useRef(null); 
+    const menuButtonRef = useRef(null); 
     useEffect(() => {
         const handleClickOutside = (event) => {
+            
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setDropdownOpen(false);
             }
-        };
-        document.addEventListener("click", handleClickOutside);
-        return () => {
-            document.removeEventListener("click", handleClickOutside);
-        };
-    }, []);
 
-    const navLink = <>
-        <li><NavLink to="/">Home</NavLink></li>
-        <li><NavLink to="/contact">Contact Us</NavLink></li>
-        {
-          user && 
-          <li><NavLink to="/dashboard">Dashboard</NavLink></li>
-        }
-        
-        <li><NavLink to="/features">Features</NavLink></li>
-    </>
+            
+            if (menuOpen && menuRef.current && !menuRef.current.contains(event.target) &&
+                menuButtonRef.current && !menuButtonRef.current.contains(event.target)) {
+                setMenuOpen(false);
+            }
+        };
+
+      
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [menuOpen]);
+    const navLink = (
+        <>
+            <li><NavLink to="/" onClick={() => setMenuOpen(false)}>Home</NavLink></li>
+            <li><NavLink to="/contact" onClick={() => setMenuOpen(false)}>Contact Us</NavLink></li>
+            {
+                user &&
+                <li><NavLink to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</NavLink></li>
+            }
+            <li><NavLink to="/features" onClick={() => setMenuOpen(false)}>Features</NavLink></li>
+        </>
+    );
 
     const handleLogout = () => {
         logOut()
             .then(() => {
-                 navigate('/signIn');
+                navigate('/signIn');
+                setDropdownOpen(false); 
+                setMenuOpen(false); 
             })
             .catch(err => {
                 console.error("Logout error:", err);
@@ -47,28 +59,37 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="py-2">
-            <div className="flex items-center justify-between">
+        <nav className="py-2 "> 
+            <div className=" flex items-center justify-between px-4">
 
-                {/* Left: Hamburger + Logo */}
+                
                 <div className="flex items-center space-x-4">
-                    <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden">
+                    <button onClick={() => setMenuOpen(!menuOpen)} className="lg:hidden text-gray-800 dark:text-white" ref={menuButtonRef}>
                         <IoMenu size={25} />
                     </button>
 
-                    <Link to="/" className="text-xl font-bold text-gray-800">
+                    <Link to="/" className="text-xl font-bold text-gray-800 dark:text-white">
                         <WorkSphereLogo />
                     </Link>
                 </div>
 
-                {/* Center: Menu Items */}
-                <div className={`flex-col lg:flex lg:flex-row lg:items-center space-y-2 lg:space-y-0 lg:space-x-6 absolute lg:static w-full lg:w-auto ${menuOpen ? 'top-17 left-0' : 'hidden'} lg:flex`}>
-                    <ul className={`flex ${menuOpen ? 'flex-col items-start bg-amber-300 p-4 w-1/3 gap-3' : 'flex-row items-center gap-5'}`}>
+               
+                <div className="hidden lg:flex lg:flex-row lg:items-center space-x-6">
+                    <ul className="flex flex-row items-center gap-5 text-gray-700 dark:text-gray-300">
                         {navLink}
                     </ul>
                 </div>
 
-                {/* Right: Profile / Button */}
+               
+                {menuOpen && (
+                    <div ref={menuRef} className="lg:hidden absolute top-16 left-0 w-1/3 bg-gray-100 dark:bg-gray-700 shadow-lg py-4 z-40">
+                        <ul className="flex flex-col items-start px-4 space-y-3 text-gray-800 dark:text-gray-200">
+                            {navLink}
+                        </ul>
+                    </div>
+                )}
+
+               
                 <div className="relative flex items-center space-x-4" ref={dropdownRef}>
                     {user ? (
                         <div className="relative">
@@ -77,7 +98,7 @@ const Navbar = () => {
                                     e.stopPropagation(); 
                                     setDropdownOpen(!dropdownOpen);
                                 }}
-                                className="w-10 h-10 rounded-md overflow-hidden border border-gray-300"
+                                className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-600 dark:border-blue-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
                                 <img
                                     src={user.photoURL || "https://i.ibb.co/2kRZ3mZ/default-user.png"}
@@ -86,13 +107,16 @@ const Navbar = () => {
                                 />
                             </button>
 
-                            {/* Dropdown */}
+                          
                             {dropdownOpen && (
-                                <div className="absolute right-0 mt-2 bg-white shadow-md rounded-md py-2 w-40 z-50">
-                                    <p className="px-4 py-2 text-sm text-gray-700">{user.displayName || "User"}</p>
+                                <div className="absolute right-0 mt-2 bg-white dark:bg-gray-700 shadow-lg rounded-md py-2 w-40 z-50 border border-gray-200 dark:border-gray-600">
+                                    <p className="px-4 py-2 text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{user.displayName || "User"}</p>
+                                    <Link to="/dashboard/profile" onClick={() => { setDropdownOpen(false); setMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        Profile
+                                    </Link>
                                     <button
                                         onClick={handleLogout}
-                                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                                     >
                                         Logout
                                     </button>
@@ -102,7 +126,7 @@ const Navbar = () => {
                     ) : (
                         <button
                             onClick={() => navigate('/signIn')}
-                            className="btn-custom"
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition-colors shadow-md"
                         >
                             Sign In
                         </button>

@@ -7,7 +7,7 @@ import Container from '../components/container/Container';
 const MainLayouts = () => {
     return (
         <div>
-            <div className="bg-gray-50 shadow-sm fixed z-50 right-0 left-0 top-0">
+            <div className="bg-white dark:bg-gray-800 shadow-md fixed z-50 right-0 left-0 top-0">
                 <Container>
                     <Navbar />
                 </Container>

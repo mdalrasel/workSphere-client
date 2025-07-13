@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
+import LoadingSpinner from '../../utils/LoadingSpinner';
 
 const Progress = () => {
    const { loading: authLoading, user } = useAuth(); 
@@ -23,7 +24,7 @@ const Progress = () => {
     // 1. Fetch all users (for employee name lookup)
     const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
         queryKey: ['all-users-for-progress'],
-        enabled: !authLoading,
+        enabled: !authLoading, // Ensure query is enabled only when auth is not loading
         queryFn: async () => {
             const res = await axiosSecure.get('/users');
             return res.data;
@@ -43,7 +44,7 @@ const Progress = () => {
     // 2. Fetch all worksheets with filters
     const { data: worksheets = [], isLoading: worksheetsLoading, error: worksheetsError } = useQuery({
         queryKey: ['all-worksheets', employeeUidFilter, monthFilter, yearFilter, taskFilter],
-        enabled: !authLoading,
+        enabled: !authLoading, // Ensure query is enabled only when auth is not loading
         queryFn: async () => {
             const params = new URLSearchParams();
             if (employeeUidFilter) params.append('employeeUid', employeeUidFilter);
@@ -82,9 +83,7 @@ const Progress = () => {
 
     if (authLoading || usersLoading || worksheetsLoading || !user) {
     return (
-        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-            <span className="loading loading-spinner loading-lg text-blue-600"></span>
-        </div>
+        <LoadingSpinner />
     );
 }
 

@@ -1,12 +1,12 @@
-
-import { Link } from 'react-router';
-import {  FaUsers, FaTasks, FaMoneyBillWave, FaDollarSign, FaHourglassHalf, FaUserTie, FaUserShield, FaUserFriends, FaChartPie, FaUserCog 
+import { Link } from 'react-router'; 
+import {  FaUsers, FaTasks, FaMoneyBillWave, FaDollarSign, FaHourglassHalf, FaUserTie, FaUserShield, FaUserFriends, FaChartPie, FaUserCog 
 } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import useUserRole from '../../hooks/useUserRole';
 import { useQuery } from '@tanstack/react-query';
+import LoadingSpinner from '../../utils/LoadingSpinner';
 
 const DashboardHome = () => {
     const { user, loading: authLoading } = useAuth();
@@ -33,6 +33,7 @@ const DashboardHome = () => {
         },
     });
 
+    // Fetch employee's worksheet data for monthly work hours chart (only for Employee role)
     const { data: employeeWorksheets = [], isLoading: employeeWorksheetsLoading, error: employeeWorksheetsError } = useQuery({
         queryKey: ['employee-worksheets-dashboard', user?.uid],
         enabled: !!user?.uid && !authLoading && !roleLoading && loggedInUserRole === 'Employee',
@@ -45,9 +46,7 @@ const DashboardHome = () => {
     // Handle loading states for all queries
     if (authLoading || roleLoading || statsLoading || paymentsLoading || employeeWorksheetsLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <span className="loading loading-spinner loading-lg text-blue-600"></span>
-            </div>
+            <LoadingSpinner />
         );
     }
 
@@ -60,6 +59,7 @@ const DashboardHome = () => {
         );
     }
 
+    // Define month order for sorting charts
     const monthOrder = {
         "January": 0, "February": 1, "March": 2, "April": 3, "May": 4, "June": 5,
         "July": 6, "August": 7, "September": 8, "October": 9, "November": 10, "December": 11
@@ -70,13 +70,14 @@ const DashboardHome = () => {
         { name: 'Employees', value: stats.totalEmployees || 0 },
         { name: 'HRs', value: stats.totalHRs || 0 },
         { name: 'Admins', value: stats.totalAdmins || 0 },
-    ].filter(item => item.value > 0); 
+    ].filter(item => item.value > 0); // Filter out roles with zero users
 
-    const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28']; 
+    const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28']; // Colors for the pie chart
 
+    // 2. Admin/HR Salary Overview Bar Chart Data
     const adminSalaryOverviewData = [
-        { name: 'Total Paid Salary', value: stats.totalSalaryPaid || 0, color: '#4CAF50' }, 
-        { name: 'Total Expected Salary', value: stats.totalExpectedSalary || 0, color: '#FFC107' }, 
+        { name: 'Total Paid Salary', value: stats.totalSalaryPaid || 0, color: '#4CAF50' }, // Green for paid
+        { name: 'Total Expected Salary', value: stats.totalExpectedSalary || 0, color: '#FFC107' }, // Amber for expected
     ];
 
     // 3. Employee Salary History Bar Chart Data
@@ -118,7 +119,7 @@ const DashboardHome = () => {
         welcomeMessage = `Welcome, ${user?.displayName || loggedInUserRole}!`;
         dashboardContent = (
             <>
-                <h3 className="text-2xl font-bold mb-4 text-center">Admin/HR Statistics</h3>
+                <h3 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">Admin/HR Statistics</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                     <div className="bg-blue-100 dark:bg-blue-900 p-6 rounded-lg shadow-lg flex items-center">
                         <FaUsers className="text-blue-600 dark:text-blue-400 mr-4" size={40} />
@@ -207,7 +208,7 @@ const DashboardHome = () => {
         chartsSection = (
             <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-                    <h3 className="text-2xl font-bold mb-4 text-center">User Distribution by Role</h3>
+                    <h3 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">User Distribution by Role</h3>
                     {userDistributionData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
@@ -237,8 +238,8 @@ const DashboardHome = () => {
                     )}
                 </div>
                 <div className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-                    <h3 className="text-2xl font-bold mb-4 text-center">Total Salary Overview</h3>
-                    {adminSalaryOverviewData.some(item => item.value > 0) ? ( // Check if any value is greater than 0
+                    <h3 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">Total Salary Overview</h3>
+                    {adminSalaryOverviewData.some(item => item.value > 0) ? (
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart
                                 data={adminSalaryOverviewData}
@@ -272,7 +273,7 @@ const DashboardHome = () => {
         welcomeMessage = `Welcome, ${user?.displayName || 'Employee'}!`;
         dashboardContent = (
             <>
-                <h3 className="text-2xl font-bold mb-4 text-center">My Statistics</h3>
+                <h3 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">My Statistics</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                     <div className="bg-blue-100 dark:bg-blue-900 p-6 rounded-lg shadow-lg flex items-center">
                         <FaTasks className="text-blue-600 dark:text-blue-400 mr-4" size={40} />
@@ -324,7 +325,7 @@ const DashboardHome = () => {
         chartsSection = (
             <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-                    <h3 className="text-2xl font-bold mb-4 text-center">My Salary History</h3>
+                    <h3 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">My Salary History</h3>
                     {employeeSalaryChartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart
@@ -349,7 +350,7 @@ const DashboardHome = () => {
                     )}
                 </div>
                 <div className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
-                    <h3 className="text-2xl font-bold mb-4 text-center">Monthly Work Hours</h3>
+                    <h3 className="text-2xl font-bold mb-4 text-center text-gray-800 dark:text-white">Monthly Work Hours</h3>
                     {employeeMonthlyHoursChartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart
@@ -366,7 +367,7 @@ const DashboardHome = () => {
                                     itemStyle={{ color: '#fff' }}
                                 />
                                 <Legend wrapperStyle={{ paddingTop: '20px', color: '#6b7280' }} className="dark:text-gray-300" />
-                                <Bar dataKey="hours" fill="#8884d8" radius={[10, 10, 0, 0]} /> {/* Changed color for distinction */}
+                                <Bar dataKey="hours" fill="#8884d8" radius={[10, 10, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
@@ -401,7 +402,7 @@ const DashboardHome = () => {
 
             {quickAccessCards && (
                 <>
-                    <h3 className="text-2xl font-bold mb-4 text-center">Quick Access</h3>
+                    <h3 className="text-2xl font-bold mt-10 mb-4 text-center text-gray-800 dark:text-white">Quick Access</h3>
                     {quickAccessCards}
                 </>
             )}
@@ -409,7 +410,7 @@ const DashboardHome = () => {
             {chartsSection}
 
             {/* Common Profile Link for all roles */}
-            <h3 className="text-2xl font-bold mt-10 mb-4 text-center">General Access</h3>
+            <h3 className="text-2xl font-bold mt-10 mb-4 text-center text-gray-800 dark:text-white">General Access</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Link to="/dashboard/profile" className="block p-6 bg-yellow-100 dark:bg-yellow-900 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 text-center transform hover:scale-105">
                     <FaUserCog className="text-yellow-600 dark:text-yellow-400 mx-auto mb-4" size={48} />
