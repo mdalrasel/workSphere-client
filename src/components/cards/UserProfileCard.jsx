@@ -20,7 +20,7 @@ const UserProfile = () => {
     const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
     // Fetch user data
-    const { data: userData = {}, isLoading: userLoading, error: userError } = useQuery({
+    const { data: userData = {}, isLoading: userLoading, error: userError , } = useQuery({
         queryKey: ['user-profile', user?.email],
         enabled: !!user?.email && !authLoading,
         queryFn: async () => {

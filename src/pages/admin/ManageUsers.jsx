@@ -13,7 +13,7 @@ const ManageUsers = () => {
     const { role: loggedInUserRole, isLoading: roleLoading } = useUserRole();
 
     // 1. Fetch all users from the server
-    const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
+    const { data: users = [], isLoading: usersLoading, error: usersError} = useQuery({
         queryKey: ['all-users-admin'],
         enabled: !authLoading && !roleLoading && loggedInUserRole === 'Admin',
         queryFn: async () => {

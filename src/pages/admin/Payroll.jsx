@@ -22,14 +22,14 @@ const Payroll = () => {
     const [isClientSecretLoading, setIsClientSecretLoading] = useState(false);
 
     
-    const { data: pendingPaymentRequests = [], isLoading: requestsLoading, error: requestsError } = useQuery({
-        queryKey: ['pendingPaymentRequests', loggedInUserRole],
-        enabled: !!user?.email && !authLoading && !roleLoading && (loggedInUserRole === 'Admin' || loggedInUserRole === 'HR'),
-        queryFn: async () => {
-            const res = await axiosSecure.get('/payment-requests');
-            return res.data;
-        },
-    });
+ const { data: pendingPaymentRequests = [], isLoading: requestsLoading, error: requestsError,  } = useQuery({
+    queryKey: ['pendingPaymentRequests', loggedInUserRole],
+    enabled: !!user?.email && !!user?.uid && !authLoading && !roleLoading && (loggedInUserRole === 'Admin' || loggedInUserRole === 'HR'),
+    queryFn: async () => {
+        const res = await axiosSecure.get('/payment-requests');
+        return res.data;
+    },
+});
 
  
     const approvePaymentRequestMutation = useMutation({

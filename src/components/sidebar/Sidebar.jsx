@@ -81,7 +81,7 @@ const Sidebar = () => {
   );
 };
 
-// ✅ Reusable Sidebar Link Component
+// Reusable Sidebar Link Component
 const SidebarLink = ({ to, label }) => (
   <Link
     to={to}

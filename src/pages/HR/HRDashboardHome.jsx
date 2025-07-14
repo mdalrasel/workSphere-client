@@ -10,7 +10,7 @@ const HRDashboardHome = () => {
     const axiosSecure = useAxiosSecure();
     const { role, isLoading: roleLoading } = useUserRole(); 
 
-    const { data: stats = {}, isLoading: statsLoading, error: statsError } = useQuery({
+    const { data: stats = {}, isLoading: statsLoading, error: statsError,} = useQuery({
         queryKey: ['dashboard-stats', role], 
         enabled: !!user?.email && !authLoading && !roleLoading, // Ensure query is enabled only when user and role are loaded
         queryFn: async () => {

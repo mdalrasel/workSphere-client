@@ -19,7 +19,7 @@ const EmployeeList = () => {
     const [employeeToPay, setEmployeeToPay] = useState(null);
 
     // 1. Fetch all users (employees, HRs, Admins) from the server
-    const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
+    const { data: users = [], isLoading: usersLoading, error: usersError, } = useQuery({
         queryKey: ['all-users'],
         enabled: !authLoading, // Ensure query is enabled only when auth is not loading
         queryFn: async () => {

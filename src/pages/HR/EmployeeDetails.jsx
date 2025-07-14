@@ -10,7 +10,7 @@ const EmployeeDetails = () => {
     const axiosSecure = useAxiosSecure();
 
     // 1. Fetch employee's profile data
-    const { data: employeeData = {}, isLoading: employeeLoading, error: employeeError } = useQuery({
+    const { data: employeeData = {}, isLoading: employeeLoading, error: employeeError, } = useQuery({
         queryKey: ['employee-details', slug],
         enabled: !!slug && !authLoading,
         queryFn: async () => {

@@ -12,7 +12,7 @@ const AdminDashboardHome = () => {
     const { role: loggedInUserRole, isLoading: roleLoading } = useUserRole();
 
     // Fetch dashboard statistics for Admin
-    const { data: stats = {}, isLoading: statsLoading, error: statsError } = useQuery({
+    const { data: stats = {}, isLoading: statsLoading, error: statsError, } = useQuery({
         queryKey: ['dashboard-stats-admin', loggedInUserRole],
         enabled: !!user?.email && !authLoading && !roleLoading && loggedInUserRole === 'Admin',
         queryFn: async () => {

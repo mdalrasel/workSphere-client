@@ -7,7 +7,7 @@ const MyPaymentHistory = () => {
     const { user, loading: authLoading } = useAuth();
     const axiosSecure = useAxiosSecure();
 
-    const { data: payments = [], isLoading, error } = useQuery({
+    const { data: payments = [], isLoading, error, } = useQuery({
         queryKey: ['my-payment-history', user?.uid], 
         enabled: !!user?.uid && !authLoading, 
         queryFn: async () => {

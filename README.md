@@ -2,7 +2,7 @@
 
 WorkSphere is a modern employee management system designed for Employees, HR personnel, and Admins. It simplifies work tracking, payroll management, and role-based data access with a secure and responsive experience.
 
-🌐 **Live Demo:** [https://worksphere-demo.vercel.app/](https://worksphere-demo.vercel.app/)
+🌐 **Live Demo:** [https://work-sphere1.netlify.app/]
 
 ---
 

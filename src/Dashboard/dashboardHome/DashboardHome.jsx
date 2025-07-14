@@ -1,5 +1,5 @@
 import { Link } from 'react-router'; 
-import {  FaUsers, FaTasks, FaMoneyBillWave, FaDollarSign, FaHourglassHalf, FaUserTie, FaUserShield, FaUserFriends, FaChartPie, FaUserCog 
+import {FaUsers, FaTasks, FaMoneyBillWave, FaDollarSign, FaHourglassHalf, FaUserTie, FaUserShield, FaUserFriends, FaChartPie, FaUserCog 
 } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import useAuth from '../../hooks/useAuth';
@@ -14,7 +14,7 @@ const DashboardHome = () => {
     const { role: loggedInUserRole, isLoading: roleLoading } = useUserRole();
 
     // Fetch dashboard statistics based on the logged-in user's role
-    const { data: stats = {}, isLoading: statsLoading, error: statsError } = useQuery({
+    const { data: stats = {}, isLoading: statsLoading, error: statsError,} = useQuery({
         queryKey: ['dashboard-stats', loggedInUserRole, user?.email],
         enabled: !!user?.email && !authLoading && !roleLoading,
         queryFn: async () => {
@@ -24,7 +24,7 @@ const DashboardHome = () => {
     });
 
     // Fetch employee's payment history for the salary history chart (only for Employee role)
-    const { data: employeePayments = [], isLoading: paymentsLoading, error: paymentsError } = useQuery({
+    const { data: employeePayments = [], isLoading: paymentsLoading, error: paymentsError, } = useQuery({
         queryKey: ['employee-payments-dashboard', user?.uid],
         enabled: !!user?.uid && !authLoading && !roleLoading && loggedInUserRole === 'Employee',
         queryFn: async () => {
@@ -34,7 +34,7 @@ const DashboardHome = () => {
     });
 
     // Fetch employee's worksheet data for monthly work hours chart (only for Employee role)
-    const { data: employeeWorksheets = [], isLoading: employeeWorksheetsLoading, error: employeeWorksheetsError } = useQuery({
+    const { data: employeeWorksheets = [], isLoading: employeeWorksheetsLoading, error: employeeWorksheetsError, } = useQuery({
         queryKey: ['employee-worksheets-dashboard', user?.uid],
         enabled: !!user?.uid && !authLoading && !roleLoading && loggedInUserRole === 'Employee',
         queryFn: async () => {

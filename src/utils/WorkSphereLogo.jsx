@@ -16,7 +16,7 @@ const WorkSphereLogo = () => {
                 height="50"
                 className="text-blue-600"
             >
-                <circle cx="50" cy="50" r="45" fill="#2563eb" /> {/* blue-600 hex */}
+                <circle cx="50" cy="50" r="45" fill="#2563eb" /> 
                 <path
                     d="M20,50 a30,10 0 1,0 60,0 a30,10 0 1,0 -60,0"
                     fill="white"

@@ -205,7 +205,7 @@ const MyWorkSheet = () => {
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 5 }, (_, i) => currentYear - i); // Last 5 years
 
-    if (loading || isWorksheetsLoading) {
+    if (loading || isWorksheetsLoading  || !user?.uid) {
         return (
             <LoadingSpinner />
         );

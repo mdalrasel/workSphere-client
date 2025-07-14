@@ -22,7 +22,7 @@ const Progress = () => {
     const taskFilter = watch('task', '');
 
     // 1. Fetch all users (for employee name lookup)
-    const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
+    const { data: users = [], isLoading: usersLoading, error: usersError, } = useQuery({
         queryKey: ['all-users-for-progress'],
         enabled: !authLoading, // Ensure query is enabled only when auth is not loading
         queryFn: async () => {
