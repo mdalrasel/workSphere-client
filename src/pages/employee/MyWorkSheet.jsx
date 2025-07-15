@@ -1,29 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css'; 
+import 'react-datepicker/dist/react-datepicker.css';
+import ReusableTable from '../../utils/ReusableTable';
+import Pagination from '../../utils/Pagination';
 import LoadingSpinner from '../../utils/LoadingSpinner';
 
 const MyWorkSheet = () => {
-    const { user, loading } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const axiosSecure = useAxiosSecure();
     const queryClient = useQueryClient();
     const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
-    const [selectedDate, setSelectedDate] = useState(new Date()); 
+    const [selectedDate, setSelectedDate] = useState(new Date());
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editingWork, setEditingWork] = useState(null); 
+    const [editingWork, setEditingWork] = useState(null);
     const [selectedMonth, setSelectedMonth] = useState('');
     const [selectedYear, setSelectedYear] = useState('');
     const taskOptions = ["Sales", "Support", "Content", "Paper-work", "Meeting", "Research"];
 
-    // 1. Fetch Worksheets for the current user (filtered by month/year)
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10; 
+
+    const { data: currentUserDetails, isLoading: isUserStatusLoading, error: userStatusError } = useQuery({
+        queryKey: ['currentUserDetails', user?.email],
+        enabled: !!user?.email && !authLoading,
+        queryFn: async () => {
+            const res = await axiosSecure.get(`/users/me?email=${user.email}`);
+            return res.data;
+        },
+        refetchOnWindowFocus: true,
+    });
+
+    const isWorkSheetActive = currentUserDetails?.isActiveWorkSheet !== true; 
+
+    console.log("Current User Details:", currentUserDetails);
+    console.log("Is Worksheet Active:", isWorkSheetActive);
+
+
+    // 2. Fetch Worksheets for the current user (filtered by month/year)
     const { data: worksheets = [], isLoading: isWorksheetsLoading, error: worksheetsError } = useQuery({
         queryKey: ['my-work-sheets', user?.uid, selectedMonth, selectedYear],
-        enabled: !!user?.uid && !loading,
+        enabled: !!user?.uid && !authLoading, 
         queryFn: async () => {
             const params = { uid: user.uid };
             if (selectedMonth) params.month = selectedMonth;
@@ -34,7 +56,7 @@ const MyWorkSheet = () => {
         },
     });
 
-    // 2. Mutation for submitting new work
+    // 3. Mutation for submitting new work
     const addWorkMutation = useMutation({
         mutationFn: async (newWorkData) => {
             const res = await axiosSecure.post('/worksheets', newWorkData);
@@ -52,6 +74,7 @@ const MyWorkSheet = () => {
             reset();
             setSelectedDate(new Date());
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
+            setCurrentPage(1); 
         },
         onError: (error) => {
             Swal.fire({
@@ -65,7 +88,7 @@ const MyWorkSheet = () => {
         },
     });
 
-    // 3. Mutation for deleting a work
+    // 4. Mutation for deleting a work
     const deleteWorkMutation = useMutation({
         mutationFn: async (id) => {
             const res = await axiosSecure.delete(`/worksheets/${id}`);
@@ -81,6 +104,7 @@ const MyWorkSheet = () => {
                 color: '#1f2937'
             });
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
+            setCurrentPage(1); 
         },
         onError: (error) => {
             Swal.fire({
@@ -94,7 +118,7 @@ const MyWorkSheet = () => {
         },
     });
 
-    // 4. Mutation for updating a work
+    // 5. Mutation for updating a work
     const updateWorkMutation = useMutation({
         mutationFn: async (updatedWorkData) => {
             const res = await axiosSecure.put(`/worksheets/${updatedWorkData._id}`, updatedWorkData);
@@ -124,8 +148,18 @@ const MyWorkSheet = () => {
         },
     });
 
-    const onSubmit = (data) => {
-        if (loading) return;
+    const onSubmit = useCallback((data) => {
+        if (!isWorkSheetActive) {
+            Swal.fire({
+                icon: "warning",
+                title: "Submission Disabled",
+                text: "Your worksheet submission is currently deactivated. Please contact your administrator.",
+                confirmButtonColor: "#f4c721",
+                background: '#fff',
+                color: '#1f2937'
+            });
+            return;
+        }
 
         const workDate = selectedDate;
         const month = workDate.toLocaleString('default', { month: 'long' });
@@ -142,10 +176,21 @@ const MyWorkSheet = () => {
             submissionDate: new Date().toISOString(),
         };
         addWorkMutation.mutate(newWork);
-    };
+    }, [addWorkMutation, isWorkSheetActive, selectedDate, user]); 
 
-    // Delete handler
-    const handleDelete = (id) => {
+    const handleDelete = useCallback((id) => {
+        if (!isWorkSheetActive) {
+            Swal.fire({
+                icon: "warning",
+                title: "Action Disabled",
+                text: "Your worksheet is currently deactivated. You cannot delete records.",
+                confirmButtonColor: "#f4c721",
+                background: '#fff',
+                color: '#1f2937'
+            });
+            return;
+        }
+
         Swal.fire({
             title: "Are you sure?",
             text: "Do you want to delete this work record?",
@@ -162,59 +207,185 @@ const MyWorkSheet = () => {
                 deleteWorkMutation.mutate(id);
             }
         });
-    };
+    }, [deleteWorkMutation, isWorkSheetActive]);
 
-    // Edit handler - Opens modal and sets form values
-    const handleEdit = (work) => {
+    const handleEdit = useCallback((work) => {
+        if (!isWorkSheetActive) {
+            Swal.fire({
+                icon: "warning",
+                title: "Action Disabled",
+                text: "Your worksheet is currently deactivated. You cannot edit records.",
+                confirmButtonColor: "#f4c721",
+                background: '#fff',
+                color: '#1f2937'
+            });
+            return;
+        }
+
         setEditingWork(work);
         setValue('task', work.task);
         setValue('hours', work.hours);
-        setSelectedDate(new Date(work.date)); 
+        setSelectedDate(new Date(work.date));
         setIsEditModalOpen(true);
-    };
+    }, [isWorkSheetActive, setValue]); 
 
     // Update form submission handler
-    const onUpdateSubmit = (data) => {
-        if (!editingWork) return; 
+    const onUpdateSubmit = useCallback((data) => {
+        if (!editingWork || !isWorkSheetActive) {
+            Swal.fire({
+                icon: "warning",
+                title: "Update Disabled",
+                text: "Your worksheet is currently deactivated. You cannot update records.",
+                confirmButtonColor: "#f4c721",
+                background: '#fff',
+                color: '#1f2937'
+            });
+            return;
+        }
 
         const updatedWork = {
-            _id: editingWork._id, 
+            _id: editingWork._id,
             email: user.email,
             uid: user.uid,
-            date: selectedDate.toISOString().split('T')[0], 
+            date: selectedDate.toISOString().split('T')[0],
             task: data.task,
             hours: parseFloat(data.hours),
             month: selectedDate.toLocaleString('default', { month: 'long' }),
             year: selectedDate.getFullYear(),
         };
-        updateWorkMutation.mutate(updatedWork); 
-    };
+        updateWorkMutation.mutate(updatedWork);
+    }, [editingWork, isWorkSheetActive, selectedDate, updateWorkMutation, user]); 
 
     // Function to close modal
-    const closeEditModal = () => {
+    const closeEditModal = useCallback(() => {
         setIsEditModalOpen(false);
         setEditingWork(null);
-        reset(); 
-        setSelectedDate(new Date()); 
-    };
+        reset();
+        setSelectedDate(new Date());
+    }, [reset]); 
 
-    const months = [
+    const months = useMemo(() => [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
-    ];
-    const currentYear = new Date().getFullYear();
-    const years = Array.from({ length: 5 }, (_, i) => currentYear - i); // Last 5 years
+    ], []);
 
-    if (loading || isWorksheetsLoading  || !user?.uid) {
+    const currentYear = new Date().getFullYear();
+    const years = useMemo(() => Array.from({ length: 5 }, (_, i) => currentYear - i), [currentYear]);
+
+    // Filter and sort worksheets data for the table
+    const filteredWorksheets = useMemo(() => {
+        let filtered = worksheets;
+
+       
+        if (selectedMonth) {
+            filtered = filtered.filter(work => work.month === selectedMonth);
+        }
+        if (selectedYear) {
+            filtered = filtered.filter(work => work.year === parseInt(selectedYear));
+        }
+
+        return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }, [worksheets, selectedMonth, selectedYear]);
+
+    const totalPages = Math.ceil(filteredWorksheets.length / itemsPerPage);
+
+    // Get current items for the table
+    const currentWorksheets = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return filteredWorksheets.slice(startIndex, endIndex);
+    }, [filteredWorksheets, currentPage, itemsPerPage]);
+
+    // Handle page change for pagination
+    const handlePageChange = useCallback((pageNumber) => {
+        setCurrentPage(pageNumber);
+    }, []);
+
+    // Define columns for ReusableTable
+    const myWorkSheetColumns = useMemo(() => [
+        {
+            header: 'Date',
+            key: 'date',
+            headerClassName: 'text-left',
+            dataClassName: 'font-medium text-gray-900 dark:text-white',
+            render: (work) => new Date(work.date).toLocaleDateString(),
+        },
+        {
+            header: 'Task Description',
+            key: 'task',
+            headerClassName: 'text-left',
+            dataClassName: 'text-gray-700 dark:text-gray-300',
+        },
+        {
+            header: 'Hours',
+            key: 'hours',
+            headerClassName: 'text-left',
+            dataClassName: 'text-gray-700 dark:text-gray-300',
+        },
+        {
+            header: 'Submission Date',
+            key: 'submissionDate',
+            headerClassName: 'text-left',
+            dataClassName: 'text-gray-700 dark:text-gray-300',
+            render: (work) => new Date(work.submissionDate).toLocaleDateString(),
+        },
+        {
+            header: 'Actions',
+            key: 'actions',
+            headerClassName: 'text-left', 
+            dataClassName: 'whitespace-nowrap text-sm font-medium',
+            render: (work) => (
+                <>
+                    <button
+                        className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-3"
+                        onClick={() => handleEdit(work)}
+                        disabled={!isWorkSheetActive}
+                    >
+                        Edit 🖊
+                    </button>
+                    <button
+                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200"
+                        onClick={() => handleDelete(work._id)}
+                        disabled={!isWorkSheetActive}
+                    >
+                        Delete ❌
+                    </button>
+                </>
+            ),
+        },
+    ], [handleEdit, handleDelete, isWorkSheetActive]); 
+
+    if (authLoading || isUserStatusLoading || !user?.uid) {
+        return <LoadingSpinner />;
+    }
+
+    if (userStatusError) {
         return (
-            <LoadingSpinner />
+            <div className="text-red-500 text-center py-10">
+                <p>Failed to load user status: {userStatusError.message}</p>
+            </div>
         );
+    }
+
+   
+    if (!isWorkSheetActive) {
+        return (
+            <div className="text-center py-10 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 rounded relative mx-auto my-10 max-w-xl" role="alert">
+                <h3 className="font-bold text-xl mb-2">Worksheet Deactivated!</h3>
+                <p className="text-lg">Your worksheet access has been temporarily deactivated by an administrator. You cannot submit, edit, or view your work records at this time.</p>
+                <p className="mt-4">Please contact your HR or administrator for more information.</p>
+            </div>
+        );
+    }
+
+    if (isWorksheetsLoading) {
+        return <LoadingSpinner />;
     }
 
     if (worksheetsError) {
         return (
             <div className="text-red-500 text-center py-10">
-                <p>Failed to load data: {worksheetsError.message}</p>
+                <p>Failed to load work records: {worksheetsError.message}</p>
             </div>
         );
     }
@@ -234,6 +405,7 @@ const MyWorkSheet = () => {
                             id="task"
                             {...register('task', { required: "Task description is required" })}
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                            disabled={!isWorkSheetActive}
                         >
                             <option value="">Select a task</option>
                             {taskOptions.map((task) => (
@@ -251,6 +423,7 @@ const MyWorkSheet = () => {
                             dateFormat="yyyy/MM/dd"
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                             placeholderText="Select a date"
+                            disabled={!isWorkSheetActive}
                         />
                         {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date.message}</p>}
                     </div>
@@ -268,6 +441,7 @@ const MyWorkSheet = () => {
                             })}
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                             placeholder="e.g., 8.0"
+                            disabled={!isWorkSheetActive}
                         />
                         {errors.hours && <p className="text-red-500 text-sm mt-1">{errors.hours.message}</p>}
                     </div>
@@ -275,7 +449,7 @@ const MyWorkSheet = () => {
                         <button
                             type="submit"
                             className="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors shadow-md"
-                            disabled={addWorkMutation.isLoading}
+                            disabled={addWorkMutation.isLoading || !isWorkSheetActive}
                         >
                             {addWorkMutation.isLoading ? 'Submitting...' : 'Submit Work'}
                         </button>
@@ -283,19 +457,21 @@ const MyWorkSheet = () => {
                 </form>
             </div>
 
-            {/* Work History Table */}
             <div className="mb-6 p-6 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
                 <h3 className="text-2xl font-semibold mb-4">My Work History</h3>
 
-                {/* Filter Controls */}
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
                     <div className="flex-1">
                         <label htmlFor="monthFilter" className="block text-sm font-medium mb-1">Filter by Month</label>
                         <select
                             id="monthFilter"
                             value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
+                            onChange={(e) => {
+                                setSelectedMonth(e.target.value);
+                                setCurrentPage(1); 
+                            }}
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                            disabled={!isWorkSheetActive}
                         >
                             <option value="">All Months</option>
                             {months.map((month) => (
@@ -308,8 +484,12 @@ const MyWorkSheet = () => {
                         <select
                             id="yearFilter"
                             value={selectedYear}
-                            onChange={(e) => setSelectedYear(e.target.value)}
+                            onChange={(e) => {
+                                setSelectedYear(e.target.value);
+                                setCurrentPage(1); // Reset page on filter change
+                            }}
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                            disabled={!isWorkSheetActive}
                         >
                             <option value="">All Years</option>
                             {years.map((year) => (
@@ -319,64 +499,24 @@ const MyWorkSheet = () => {
                     </div>
                 </div>
 
-                {worksheets.length === 0 ? (
-                    <p className="text-center text-gray-600 dark:text-gray-400">No work records found.</p>
+                {filteredWorksheets.length === 0 ? (
+                    <p className="text-center text-gray-600 dark:text-gray-400">No work records found for the selected filters.</p>
                 ) : (
-                    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-100 dark:bg-gray-700">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        Date
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        Task Description
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        Hours
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        Submission Date
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                {worksheets.map((work) => (
-                                    <tr key={work._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                            {new Date(work.date).toLocaleDateString()}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                            {work.task}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                            {work.hours}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                            {new Date(work.submissionDate).toLocaleDateString()}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <button 
-                                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-3"
-                                                onClick={() => handleEdit(work)}
-                                            >
-                                                Edit 🖊
-                                            </button>
-                                            <button 
-                                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200"
-                                                onClick={() => handleDelete(work._id)}
-                                            >
-                                                Delete ❌
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <>
+                        <ReusableTable
+                            columns={myWorkSheetColumns}
+                            data={currentWorksheets} // Use paginated data
+                            rowKey="_id"
+                            renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No work records found for this page.</p>}
+                        />
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                            itemsPerPage={itemsPerPage}
+                            totalItems={filteredWorksheets.length}
+                        />
+                    </>
                 )}
             </div>
 
@@ -389,16 +529,17 @@ const MyWorkSheet = () => {
                             onClick={closeEditModal}
                             className="absolute top-4 right-4 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-2xl"
                         >
-                            &times; {/* Close button icon */}
+                            &times;
                         </button>
                         <form onSubmit={handleSubmit(onUpdateSubmit)} className="grid grid-cols-1 gap-4">
-                            {/* Tasks Dropdown for Edit */}
+                          
                             <div>
                                 <label htmlFor="editTask" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Task Description</label>
                                 <select
                                     id="editTask"
                                     {...register('task', { required: "Task description is required" })}
                                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                                    disabled={!isWorkSheetActive}
                                 >
                                     <option value="">Select a task</option>
                                     {taskOptions.map((task) => (
@@ -416,6 +557,7 @@ const MyWorkSheet = () => {
                                     dateFormat="yyyy/MM/dd"
                                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                                     placeholderText="Select a date"
+                                    disabled={!isWorkSheetActive}
                                 />
                                 {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date.message}</p>}
                             </div>
@@ -433,6 +575,7 @@ const MyWorkSheet = () => {
                                     })}
                                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                                     placeholder="e.g., 8.0"
+                                    disabled={!isWorkSheetActive}
                                 />
                                 {errors.hours && <p className="text-red-500 text-sm mt-1">{errors.hours.message}</p>}
                             </div>
@@ -447,7 +590,7 @@ const MyWorkSheet = () => {
                                 <button
                                     type="submit"
                                     className="bg-blue-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-blue-700 transition-colors shadow-md"
-                                    disabled={updateWorkMutation.isLoading}
+                                    disabled={updateWorkMutation.isLoading || !isWorkSheetActive}
                                 >
                                     {updateWorkMutation.isLoading ? 'Updating...' : 'Update'}
                                 </button>

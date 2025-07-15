@@ -23,7 +23,6 @@ const DashboardHome = () => {
         },
     });
 
-    // Fetch employee's payment history for the salary history chart (only for Employee role)
     const { data: employeePayments = [], isLoading: paymentsLoading, error: paymentsError, } = useQuery({
         queryKey: ['employee-payments-dashboard', user?.uid],
         enabled: !!user?.uid && !authLoading && !roleLoading && loggedInUserRole === 'Employee',
@@ -33,7 +32,6 @@ const DashboardHome = () => {
         },
     });
 
-    // Fetch employee's worksheet data for monthly work hours chart (only for Employee role)
     const { data: employeeWorksheets = [], isLoading: employeeWorksheetsLoading, error: employeeWorksheetsError, } = useQuery({
         queryKey: ['employee-worksheets-dashboard', user?.uid],
         enabled: !!user?.uid && !authLoading && !roleLoading && loggedInUserRole === 'Employee',
@@ -43,7 +41,6 @@ const DashboardHome = () => {
         },
     });
 
-    // Handle loading states for all queries
     if (authLoading || roleLoading || statsLoading || paymentsLoading || employeeWorksheetsLoading) {
         return (
             <LoadingSpinner />
@@ -70,14 +67,14 @@ const DashboardHome = () => {
         { name: 'Employees', value: stats.totalEmployees || 0 },
         { name: 'HRs', value: stats.totalHRs || 0 },
         { name: 'Admins', value: stats.totalAdmins || 0 },
-    ].filter(item => item.value > 0); // Filter out roles with zero users
+    ].filter(item => item.value > 0);
 
-    const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28']; // Colors for the pie chart
+    const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28']; 
 
     // 2. Admin/HR Salary Overview Bar Chart Data
     const adminSalaryOverviewData = [
-        { name: 'Total Paid Salary', value: stats.totalSalaryPaid || 0, color: '#4CAF50' }, // Green for paid
-        { name: 'Total Expected Salary', value: stats.totalExpectedSalary || 0, color: '#FFC107' }, // Amber for expected
+        { name: 'Total Paid Salary', value: stats.totalSalaryPaid || 0, color: '#4CAF50' },
+        { name: 'Total Expected Salary', value: stats.totalExpectedSalary || 0, color: '#FFC107' }, 
     ];
 
     // 3. Employee Salary History Bar Chart Data
@@ -87,13 +84,13 @@ const DashboardHome = () => {
         }
         return monthOrder[a.month] - monthOrder[b.month];
     }).map(p => ({
-        name: `${p.month.substring(0, 3)} ${p.year % 100}`, // e.g., Jan 24
+        name: `${p.month.substring(0, 3)} ${p.year % 100}`, 
         Salary: p.amount,
     }));
 
     // 4. Employee Monthly Work Hours Bar Chart Data
     const employeeMonthlyHoursRaw = employeeWorksheets.reduce((acc, work) => {
-        const key = `${work.month} ${work.year}`; // Use full month name and year for unique key
+        const key = `${work.month} ${work.year}`; 
         if (!acc[key]) {
             acc[key] = { name: `${work.month.substring(0, 3)} ${work.year % 100}`, hours: 0, year: work.year, monthIndex: monthOrder[work.month] };
         }

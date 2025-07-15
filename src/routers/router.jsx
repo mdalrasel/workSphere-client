@@ -21,70 +21,54 @@ import ManageUsers from "../pages/admin/ManageUsers";
 import Payroll from "../pages/admin/Payroll";
 import AdminDashboardHome from "../pages/admin/AdminDashboardHome";
 import EmployeeDashboardHome from "../pages/employee/EmployeeDashboardHome";
+import ErrorPage from "../utils/ErrorPage";
 
 
 export const router = createBrowserRouter([
   {
     path: "/",
+    errorElement:<ErrorPage />,
     element: <MainLayouts />,
+    handle: { title: "workSphere" },
     children: [
-       {
-        index: true,
-        Component:Home
-      },
-      {
-        path: 'contact',
-        Component:ContactUs
-      },
-      {
-        path: 'features',
-        Component:Features
-      }
+      {index: true, Component: Home,handle: { title: "Home | workSphere" }},
+      { path: 'contact',Component: ContactUs,handle: { title: "ContactUs | workSphere" }},
+      {path: 'features',Component: Features,handle: { title: "Features | workSphere" }}
     ]
   },
   {
     path: '/',
     Component: AuthLayout,
     children: [
-      {
-        path: 'signIn',
-        Component: SignIn
-      },
-      {
-        path: 'register',
-        Component: Register
-      }
+      {path: 'signIn', Component: SignIn,handle: { title: "SignIn | workSphere" }},
+      {path: 'register',Component: Register,handle: { title: "Register | workSphere" }}
     ]
   },
   {
     path: '/dashboard',
     element: <PrivateRoute><DashboardLayout /></PrivateRoute>,
     children: [
-      {
-        index: true,
-        Component: DashboardHome,
-      },
-
+      {index: true,Component: DashboardHome,},
       { path: 'profile', Component: UserProfileCard },
 
       /* Employee Routes */
-      { path: 'employee-home', Component: EmployeeDashboardHome },
-      { path: 'my-work-sheet', Component: MyWorkSheet },
-      { path: 'my-payment-history', Component: MyPaymentHistory },
+      { path: 'employee-home', Component: EmployeeDashboardHome, handle: { title: "EmployeeDashboardHome | workSphere" } },
+      { path: 'my-work-sheet', Component: MyWorkSheet,handle: { title: "MyWorkSheet | workSphere" } },
+      { path: 'my-payment-history', Component: MyPaymentHistory,handle: { title: "MyPaymentHistory | workSphere" } },
 
 
       /* HR Routes */
-      { path: 'hr-home', Component: HRDashboardHome },
-      { path: 'employee-list', Component: EmployeeList },
-      { path: 'employee-details/:slug', Component: EmployeeDetails },
-      { path: 'progress', Component: Progress },
-      { path: 'payment-history', Component: PaymentHistoryHR },
+      { path: 'hr-home', Component: HRDashboardHome ,handle: { title: "HRDashboardHome | workSphere" } },
+      { path: 'employee-list', Component: EmployeeList ,handle: { title: "EmployeeList | workSphere" }},
+      { path: 'employee-details/:slug', Component: EmployeeDetails ,handle: { title: "EmployeeDetails | workSphere" }},
+      { path: 'progress', Component: Progress,handle: { title: "Progress | workSphere" } },
+      { path: 'payment-history', Component: PaymentHistoryHR,handle: { title: "PaymentHistoryHR | workSphere" }  },
 
       /* Admin Routes */
-      { path: 'admin-home', Component: AdminDashboardHome },
-      { path: 'manage-users', Component: ManageUsers },
-      { path: 'all-employee-list', Component: EmployeeList },
-      { path: 'payroll', Component: Payroll }
+      { path: 'admin-home', Component: AdminDashboardHome,handle: { title: "AdminDashboardHome | workSphere" } },
+      { path: 'manage-users', Component: ManageUsers ,handle: { title: "ManageUsers | workSphere" }},
+      { path: 'all-employee-list', Component: EmployeeList,handle: { title: "EmployeeList | workSphere" } },
+      { path: 'payroll', Component: Payroll,handle: { title: "Payroll | workSphere" } }
     ]
   }
 ]);

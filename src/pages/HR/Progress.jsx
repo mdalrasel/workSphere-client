@@ -1,6 +1,4 @@
-// src/pages/dashboard/Progress.jsx
-
-import React, { useMemo } from 'react'; 
+import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
@@ -11,7 +9,7 @@ import {
 import LoadingSpinner from '../../utils/LoadingSpinner';
 
 const Progress = () => {
-   const { loading: authLoading, user } = useAuth(); 
+    const { loading: authLoading, user } = useAuth();
     const axiosSecure = useAxiosSecure();
     const { register, watch } = useForm();
 
@@ -24,11 +22,13 @@ const Progress = () => {
     // 1. Fetch all users (for employee name lookup)
     const { data: users = [], isLoading: usersLoading, error: usersError, } = useQuery({
         queryKey: ['all-users-for-progress'],
-        enabled: !authLoading, // Ensure query is enabled only when auth is not loading
+        enabled: !authLoading, 
         queryFn: async () => {
             const res = await axiosSecure.get('/users');
             return res.data;
         },
+        staleTime: 5 * 60 * 1000,
+        cacheTime: 10 * 60 * 1000,
     });
 
     // Create a map for quick employee name lookup by UID
@@ -39,7 +39,7 @@ const Progress = () => {
             }
             return acc;
         }, {});
-    }, [users]); 
+    }, [users]);
 
     // 2. Fetch all worksheets with filters
     const { data: worksheets = [], isLoading: worksheetsLoading, error: worksheetsError } = useQuery({
@@ -73,19 +73,19 @@ const Progress = () => {
             name: name,
             'Total Hours': employeeHours[name]
         }));
-    }, [worksheets, employeeMap]); 
+    }, [worksheets, employeeMap]);
     const months = [
         "", "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
     const currentYear = new Date().getFullYear();
-    const years = ["", ...Array.from({ length: 5 }, (_, i) => currentYear - i)]; 
+    const years = ["", ...Array.from({ length: 5 }, (_, i) => currentYear - i)];
 
     if (authLoading || usersLoading || worksheetsLoading || !user) {
-    return (
-        <LoadingSpinner />
-    );
-}
+        return (
+            <LoadingSpinner />
+        );
+    }
 
     if (usersError || worksheetsError) {
         return (
@@ -162,19 +162,19 @@ const Progress = () => {
                                 top: 20, right: 30, left: 20, bottom: 5,
                             }}
                         >
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" className="dark:stroke-gray-600"/>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" className="dark:stroke-gray-600" />
                             <XAxis dataKey="name" stroke="#6b7280" className="dark:stroke-gray-300 text-sm" />
                             <YAxis stroke="#6b7280" className="dark:stroke-gray-300 text-sm" label={{ value: 'Hours Worked', angle: -90, position: 'insideLeft', fill: '#6b7280', className: 'dark:fill-gray-300' }} />
-                            <Tooltip 
-                                cursor={{ fill: 'rgba(0,0,0,0.1)' }} 
-                                contentStyle={{ backgroundColor: '#374151', borderColor: '#4b5563', color: '#ffffff', borderRadius: '8px' }} 
+                            <Tooltip
+                                cursor={{ fill: 'rgba(0,0,0,0.1)' }}
+                                contentStyle={{ backgroundColor: '#374151', borderColor: '#4b5563', color: '#ffffff', borderRadius: '8px' }}
                                 labelStyle={{ color: '#9ca3af' }}
                             />
                             <Legend wrapperStyle={{ paddingTop: '20px', color: '#6b7280' }} className="dark:text-gray-300" />
-                            <Bar 
-                                dataKey="Total Hours" 
-                                fill="#8884d8" 
-                                radius={[10, 10, 0, 0]} 
+                            <Bar
+                                dataKey="Total Hours"
+                                fill="#8884d8"
+                                radius={[10, 10, 0, 0]}
                             >
                                 {
                                     chartData.map((entry, index) => (
@@ -182,10 +182,10 @@ const Progress = () => {
                                             key={`bar-${index}`}
                                             fill={
                                                 index % 5 === 0 ? '#4CAF50' : // Green
-                                                index % 5 === 1 ? '#2196F3' : // Blue
-                                                index % 5 === 2 ? '#FFC107' : // Amber
-                                                index % 5 === 3 ? '#9C27B0' : // Purple
-                                                '#FF5722' // Deep Orange
+                                                    index % 5 === 1 ? '#2196F3' : // Blue
+                                                        index % 5 === 2 ? '#FFC107' : // Amber
+                                                            index % 5 === 3 ? '#9C27B0' : // Purple
+                                                                '#FF5722' // Deep Orange
                                             }
                                         />
                                     ))

@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import { FaCheckCircle, FaTimesCircle, FaMoneyBillWave, FaInfoCircle } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
-import { useNavigate, Link } from 'react-router'; // 'react-router' থেকে 'react-router-dom' এ পরিবর্তন করা হয়েছে
+import { useNavigate } from 'react-router';
 import LoadingSpinner from '../../utils/LoadingSpinner';
+import ReusableTable from '../../utils/ReusableTable';
+import Pagination from '../../utils/Pagination';
 
 const EmployeeList = () => {
     const { user, loading: authLoading } = useAuth();
@@ -18,10 +20,13 @@ const EmployeeList = () => {
     const [isPayModalOpen, setIsPayModalOpen] = useState(false);
     const [employeeToPay, setEmployeeToPay] = useState(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     // 1. Fetch all users (employees, HRs, Admins) from the server
     const { data: users = [], isLoading: usersLoading, error: usersError, } = useQuery({
         queryKey: ['all-users'],
-        enabled: !authLoading, // Ensure query is enabled only when auth is not loading
+        enabled: !authLoading,
         queryFn: async () => {
             const res = await axiosSecure.get('/users');
             return res.data;
@@ -29,6 +34,18 @@ const EmployeeList = () => {
     });
 
     const employees = users.filter(u => u.role === 'Employee');
+
+    const totalPages = Math.ceil(employees.length / itemsPerPage);
+
+    const currentEmployees = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return employees.slice(startIndex, endIndex);
+    }, [employees, currentPage, itemsPerPage]);
+
+    const handlePageChange = useCallback((pageNumber) => {
+        setCurrentPage(pageNumber);
+    }, []);
 
     // 2. Mutation for toggling verified status
     const toggleVerifiedMutation = useMutation({
@@ -45,7 +62,7 @@ const EmployeeList = () => {
                 background: '#fff',
                 color: '#1f2937'
             });
-            queryClient.invalidateQueries(['all-users']); // Invalidate to refetch updated user list
+            queryClient.invalidateQueries(['all-users']);
         },
         onError: (error) => {
             Swal.fire({
@@ -62,7 +79,7 @@ const EmployeeList = () => {
     // 3. Mutation for making a payment request
     const makePaymentRequestMutation = useMutation({
         mutationFn: async (paymentData) => {
-            const res = await axiosSecure.post('/payment-requests', paymentData); 
+            const res = await axiosSecure.post('/payment-requests', paymentData);
             return res.data;
         },
         onSuccess: () => {
@@ -75,8 +92,7 @@ const EmployeeList = () => {
                 color: '#1f2937'
             });
             closePayModal();
-            // Invalidate payroll queries if necessary, though this is for HR/Admin payroll page
-            queryClient.invalidateQueries(['pendingPaymentRequests']); 
+            queryClient.invalidateQueries(['pendingPaymentRequests']);
         },
         onError: (error) => {
             Swal.fire({
@@ -90,8 +106,7 @@ const EmployeeList = () => {
         },
     });
 
-    // Handle toggle verified status
-    const handleToggleVerified = (id, currentStatus) => {
+    const handleToggleVerified = useCallback((id, currentStatus) => {
         Swal.fire({
             title: "Are you sure?",
             text: `Do you want to ${currentStatus ? 'unverify' : 'verify'} this employee's status?`,
@@ -108,10 +123,10 @@ const EmployeeList = () => {
                 toggleVerifiedMutation.mutate({ id, newStatus: !currentStatus });
             }
         });
-    };
+    }, [toggleVerifiedMutation]);
 
     // Handle Pay - Opens modal and sets form values
-    const handlePay = (employee) => {
+    const handlePay = useCallback((employee) => {
         if (!employee.isVerified) {
             Swal.fire({
                 icon: "info",
@@ -129,10 +144,9 @@ const EmployeeList = () => {
         setValue('month', today.toLocaleString('default', { month: 'long' }));
         setValue('year', today.getFullYear());
         setIsPayModalOpen(true);
-    };
+    }, [setValue]);
 
-    // Pay form submission handler
-    const onPaySubmit = (data) => {
+    const onPaySubmit = useCallback((data) => {
         if (!employeeToPay) return;
 
         const paymentData = {
@@ -148,17 +162,16 @@ const EmployeeList = () => {
             requestedBy: user.email,
         };
         makePaymentRequestMutation.mutate(paymentData);
-    };
+    }, [employeeToPay, user, makePaymentRequestMutation]);
 
-    const closePayModal = () => {
+    const closePayModal = useCallback(() => {
         setIsPayModalOpen(false);
         setEmployeeToPay(null);
         reset();
-    };
+    }, [reset]);
 
     // Handle Details - Navigates to EmployeeDetails page
-    const handleDetails = (employeeUid) => {
-        
+    const handleDetails = useCallback((employeeUid) => {
         if (!employeeUid) {
             Swal.fire({
                 icon: "error",
@@ -171,7 +184,7 @@ const EmployeeList = () => {
             return;
         }
         navigate(`/dashboard/employee-details/${employeeUid}`);
-    };
+    }, [navigate]);
 
     const months = [
         "January", "February", "March", "April", "May", "June",
@@ -179,6 +192,83 @@ const EmployeeList = () => {
     ];
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
+    const employeeListColumns = useMemo(() => [
+        {
+            header: 'Name',
+            key: 'name',
+            headerClassName: 'text-left',
+            dataClassName: 'font-medium text-gray-900 dark:text-white',
+            render: (employee) => employee.name || 'N/A'
+        },
+        {
+            header: 'Email',
+            key: 'email',
+            headerClassName: 'text-left',
+            dataClassName: 'text-gray-700 dark:text-gray-300'
+        },
+        {
+            header: 'Verified',
+            key: 'isVerified',
+            headerClassName: 'text-center',
+            dataClassName: 'text-center',
+            render: (employee) => (
+                <button
+                    className={`p-1 rounded-full transition-colors duration-200 ${employee.isVerified ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'}`}
+                    title={employee.isVerified ? 'Verified: Click to unverify' : 'Not Verified: Click to verify'}
+                    onClick={() => handleToggleVerified(employee._id, employee.isVerified)}
+                    disabled={toggleVerifiedMutation.isLoading}
+                >
+                    {employee.isVerified ? <FaCheckCircle size={20} /> : <FaTimesCircle size={20} />}
+                </button>
+            )
+        },
+        {
+            header: 'Bank Account',
+            key: 'bank_account_no',
+            headerClassName: 'text-left',
+            dataClassName: 'text-gray-700 dark:text-gray-300',
+            render: (employee) => employee.bank_account_no || 'N/A'
+        },
+        {
+            header: 'Salary',
+            key: 'salary',
+            headerClassName: 'text-left',
+            dataClassName: 'text-gray-700 dark:text-gray-300',
+            render: (employee) => `$${employee.salary ? employee.salary.toFixed(2) : '0.00'}`
+        },
+        {
+            header: 'Actions',
+            key: 'actions',
+            headerClassName: 'text-right',
+            dataClassName: 'text-right font-medium',
+            render: (employee) => (
+                <>
+                    {/* Pay Button */}
+                    <button
+                        className={`text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-3 p-2 rounded-md transition-opacity duration-200 ${employee.isVerified ? '' : 'opacity-50 cursor-not-allowed'}`}
+                        disabled={!employee.isVerified || makePaymentRequestMutation.isLoading}
+                        title={employee.isVerified ? 'Pay Salary' : 'Not verified, cannot pay salary'}
+                        onClick={() => handlePay(employee)}
+                    >
+                        <FaMoneyBillWave size={20} />
+                    </button>
+                    {/* Details Button */}
+                    <button
+                        className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200 p-2 rounded-md transition-colors duration-200"
+                        title="View Details"
+                        onClick={() => handleDetails(employee.uid)}
+                    >
+                        <FaInfoCircle size={20} />
+                    </button>
+                </>
+            )
+        },
+    ], [
+        handleToggleVerified, toggleVerifiedMutation.isLoading,
+        handlePay, makePaymentRequestMutation.isLoading,
+        handleDetails
+    ]);
 
     if (authLoading || usersLoading) {
         return (
@@ -198,84 +288,21 @@ const EmployeeList = () => {
         <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-gray-900 dark:text-white">
             <h2 className="text-3xl font-bold mb-6 text-center">Employee List</h2>
 
-            {employees.length === 0 ? (
-                <p className="text-center text-gray-600 dark:text-gray-400">No employees found.</p>
-            ) : (
-                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-100 dark:bg-gray-700">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Name
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Email
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Verified
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Bank Account
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Salary
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {employees.map((employee) => (
-                                <tr key={employee._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                        {employee.name || 'N/A'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        {employee.email}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                        {/* Verified Status - Now interactive */}
-                                        <button 
-                                            className={`p-1 rounded-full transition-colors duration-200 ${employee.isVerified ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'}`}
-                                            title={employee.isVerified ? 'Verified: Click to unverify' : 'Not Verified: Click to verify'}
-                                            onClick={() => handleToggleVerified(employee._id, employee.isVerified)}
-                                            disabled={toggleVerifiedMutation.isLoading}
-                                        >
-                                            {employee.isVerified ? <FaCheckCircle size={20} /> : <FaTimesCircle size={20} />}
-                                        </button>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        {employee.bank_account_no || 'N/A'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        ${employee.salary ? employee.salary.toFixed(2) : '0.00'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        {/* Pay Button */}
-                                        <button 
-                                            className={`text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-3 p-2 rounded-md transition-opacity duration-200 ${employee.isVerified ? '' : 'opacity-50 cursor-not-allowed'}`}
-                                            disabled={!employee.isVerified || makePaymentRequestMutation.isLoading}
-                                            title={employee.isVerified ? 'Pay Salary' : 'Not verified, cannot pay salary'}
-                                            onClick={() => handlePay(employee)}
-                                        >
-                                            <FaMoneyBillWave size={20} />
-                                        </button>
-                                        {/* Details Button */}
-                                        <button 
-                                            className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-200 p-2 rounded-md transition-colors duration-200"
-                                            title="View Details"
-                                            onClick={() => handleDetails(employee.uid)}
-                                        >
-                                            <FaInfoCircle size={20} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+            <ReusableTable
+                columns={employeeListColumns}
+                data={currentEmployees}
+                rowKey="_id"
+                renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No employees found.</p>}
+            />
+
+            {/* Pagination Component */}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                itemsPerPage={itemsPerPage}
+                totalItems={employees.length}
+            />
 
             {/* Pay Modal */}
             {isPayModalOpen && (
@@ -304,7 +331,14 @@ const EmployeeList = () => {
                                 <input
                                     type="number"
                                     id="salary"
-                                    {...register('salary', { required: "Salary amount is required", min: 0 })}
+                                    {...register('salary', { 
+                                        required: "Salary amount is required", 
+                                        min: {
+                                            value: 0.01, 
+                                            message: "Amount must be greater than 0"
+                                        },
+                                        valueAsNumber: true 
+                                    })}
                                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                                 />
                                 {errors.salary && <p className="text-red-500 text-sm mt-1">{errors.salary.message}</p>}

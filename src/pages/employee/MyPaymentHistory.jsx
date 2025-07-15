@@ -1,36 +1,95 @@
+import React, { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import LoadingSpinner from '../../utils/LoadingSpinner';
+import ReusableTable from '../../utils/ReusableTable';
+import Pagination from '../../utils/Pagination';
 
 const MyPaymentHistory = () => {
     const { user, loading: authLoading } = useAuth();
     const axiosSecure = useAxiosSecure();
 
-    const { data: payments = [], isLoading, error, } = useQuery({
-        queryKey: ['my-payment-history', user?.uid], 
-        enabled: !!user?.uid && !authLoading, 
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    const { data: payments = [], isLoading, error } = useQuery({
+        queryKey: ['my-payment-history', user?.uid],
+        enabled: !!user?.uid && !authLoading,
         queryFn: async () => {
-            const res = await axiosSecure.get(`/payments?uid=${user.uid}`); 
+            const res = await axiosSecure.get(`/payments?uid=${user.uid}`);
             return res.data;
         },
     });
 
-    // Data sorting logic
-    const sortedPayments = [...payments].sort((a, b) => {
-        // A map to convert month names to numbers
+    
+    const sortedPayments = useMemo(() => {
         const monthOrder = {
             "January": 0, "February": 1, "March": 2, "April": 3, "May": 4, "June": 5,
             "July": 6, "August": 7, "September": 8, "October": 9, "November": 10, "December": 11
         };
 
-        // First, sort by year (older years first)
-        if (a.year !== b.year) {
-            return a.year - b.year;
-        }
-        // If the year is the same, then sort by month (older months first)
-        return monthOrder[a.month] - monthOrder[b.month];
-    });
+        return [...payments].sort((a, b) => {
+          
+            if (a.year !== b.year) {
+                return a.year - b.year;
+            }
+           
+            return monthOrder[a.month] - monthOrder[b.month];
+        });
+    }, [payments]); 
+
+   
+    const totalPages = Math.ceil(sortedPayments.length / itemsPerPage);
+
+    
+    const currentPayments = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return sortedPayments.slice(startIndex, endIndex);
+    }, [sortedPayments, currentPage, itemsPerPage]);
+
+   
+    const handlePageChange = useCallback((pageNumber) => {
+        setCurrentPage(pageNumber);
+    }, []);
+
+    const paymentHistoryColumns = useMemo(() => [
+        {
+            header: 'Month',
+            key: 'month',
+            headerClassName: 'text-left',
+            dataClassName: 'font-medium text-gray-900 dark:text-white',
+        },
+        {
+            header: 'Year',
+            key: 'year',
+            headerClassName: 'text-left',
+            dataClassName: 'text-gray-700 dark:text-gray-300',
+        },
+        {
+            header: 'Amount',
+            key: 'amount',
+            headerClassName: 'text-left',
+            dataClassName: 'text-gray-700 dark:text-gray-300',
+            render: (payment) => `$${payment.amount ? payment.amount.toFixed(2) : '0.00'}`,
+        },
+        {
+            header: 'Transaction ID',
+            key: 'transactionId',
+            headerClassName: 'text-left',
+            dataClassName: 'text-gray-700 dark:text-gray-300',
+            render: (payment) => payment.transactionId || 'N/A',
+        },
+        {
+            header: 'Payment Date',
+            key: 'paymentDate',
+            headerClassName: 'text-left',
+            dataClassName: 'text-gray-700 dark:text-gray-300',
+            render: (payment) => payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : 'N/A',
+        },
+    ], []);
 
     if (authLoading || isLoading) {
         return (
@@ -50,53 +109,24 @@ const MyPaymentHistory = () => {
         <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-gray-900 dark:text-white">
             <h2 className="text-3xl font-bold mb-6 text-center">My Payment History</h2>
 
-            {sortedPayments.length === 0 ? ( 
+            {sortedPayments.length === 0 ? (
                 <p className="text-center text-gray-600 dark:text-gray-400">No payment records found.</p>
             ) : (
-                <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead className="bg-gray-100 dark:bg-gray-700">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Month
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Year
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Amount
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Transaction ID
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    Payment Date
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            {sortedPayments.map((payment) => ( 
-                                <tr key={payment._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                        {payment.month}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        {payment.year}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        ${payment.amount ? payment.amount.toFixed(2) : '0.00'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        {payment.transactionId || 'N/A'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                        {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : 'N/A'}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <>
+                    <ReusableTable
+                        columns={paymentHistoryColumns}
+                        data={currentPayments} 
+                        rowKey="_id"
+                        renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No payment records found for this page.</p>}
+                    />
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        itemsPerPage={itemsPerPage}
+                        totalItems={sortedPayments.length}
+                    />
+                </>
             )}
         </div>
     );

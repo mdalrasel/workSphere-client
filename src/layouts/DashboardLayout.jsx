@@ -4,8 +4,11 @@ import { FaBars } from 'react-icons/fa';
 import Sidebar from '../components/sidebar/Sidebar';
 import useAuth from '../hooks/useAuth';
 import LoadingSpinner from '../utils/LoadingSpinner';
+import usePageTitle from '../hooks/usePageTitle';
+import { Helmet } from 'react-helmet-async';
 
 const DashboardLayout = () => {
+    const pageTitle = usePageTitle();
     const { loading } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -17,6 +20,9 @@ const DashboardLayout = () => {
 
     return (
         <div className="flex min-h-screen">
+             <Helmet>
+                <title>{pageTitle}</title>
+            </Helmet>
             <div
                 className={`fixed inset-y-0 left-0 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
                 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 
