@@ -3,12 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
-import { FaCheckCircle, FaTimesCircle, FaMoneyBillWave, FaInfoCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaMoneyBillWave, FaInfoCircle, FaTable, FaThLarge } from 'react-icons/fa'; 
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 import LoadingSpinner from '../../utils/LoadingSpinner';
 import ReusableTable from '../../utils/ReusableTable';
 import Pagination from '../../utils/Pagination';
+import ReusableCard from '../../components/cards/ReusableCard';
 
 const EmployeeList = () => {
     const { user, loading: authLoading } = useAuth();
@@ -21,7 +22,13 @@ const EmployeeList = () => {
     const [employeeToPay, setEmployeeToPay] = useState(null);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const itemsPerPage = 9;
+    const [viewMode, setViewMode] = useState('table'); 
+
+   
+    const toggleViewMode = useCallback(() => {
+        setViewMode((prevMode) => (prevMode === 'table' ? 'card' : 'table'));
+    }, []);
 
     // 1. Fetch all users (employees, HRs, Admins) from the server
     const { data: users = [], isLoading: usersLoading, error: usersError, } = useQuery({
@@ -195,11 +202,20 @@ const EmployeeList = () => {
 
     const employeeListColumns = useMemo(() => [
         {
-            header: 'Name',
+            header: 'Photo & Name', 
             key: 'name',
             headerClassName: 'text-left',
             dataClassName: 'font-medium text-gray-900 dark:text-white',
-            render: (employee) => employee.name || 'N/A'
+            render: (employee) => (
+                <div className="flex items-center">
+                    <img
+                        src={employee.photoURL || "https://i.ibb.co/XZfsjds7/Profile.png"}
+                        alt={employee.name || 'User'}
+                        className="w-8 h-8 rounded-full object-cover mr-2 border border-gray-300 dark:border-gray-600"
+                    />
+                    {employee.name || 'N/A'}
+                </div>
+            )
         },
         {
             header: 'Email',
@@ -243,7 +259,7 @@ const EmployeeList = () => {
             headerClassName: 'text-right',
             dataClassName: 'text-right font-medium',
             render: (employee) => (
-                <>
+                <div className="flex items-center justify-end space-x-2">
                     {/* Pay Button */}
                     <button
                         className={`text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 mr-3 p-2 rounded-md transition-opacity duration-200 ${employee.isVerified ? '' : 'opacity-50 cursor-not-allowed'}`}
@@ -261,10 +277,73 @@ const EmployeeList = () => {
                     >
                         <FaInfoCircle size={20} />
                     </button>
-                </>
+                </div>
             )
         },
     ], [
+        handleToggleVerified, toggleVerifiedMutation.isLoading,
+        handlePay, makePaymentRequestMutation.isLoading,
+        handleDetails
+    ]);
+
+    // renderItem function for ReusableCard
+    const renderEmployeeCard = useCallback((employee) => (
+        <div className="flex flex-col space-y-3">
+            <div className="flex items-center">
+                <img
+                    src={employee.photoURL || "https://i.ibb.co/XZfsjds7/Profile.png"}
+                    alt={employee.name || 'User'}
+                    className="w-12 h-12 rounded-full object-cover mr-4 border border-gray-300 dark:border-gray-600"
+                />
+                <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{employee.name || 'N/A'}</h3>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{employee.email || 'N/A'}</p>
+                </div>
+            </div>
+
+            <div className="flex justify-between items-center text-gray-700 dark:text-gray-300 text-base">
+                <span className="font-medium">Verified:</span>
+                <button
+                    className={`p-1 rounded-full transition-colors duration-200 ${employee.isVerified ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'}`}
+                    title={employee.isVerified ? 'Verified: Click to unverify' : 'Not Verified: Click to verify'}
+                    onClick={() => handleToggleVerified(employee._id, employee.isVerified)}
+                    disabled={toggleVerifiedMutation.isLoading}
+                >
+                    {employee.isVerified ? <FaCheckCircle size={20} /> : <FaTimesCircle size={20} />}
+                </button>
+            </div>
+
+            <div className="flex justify-between items-center text-gray-700 dark:text-gray-300 text-base">
+                <span className="font-medium">Bank Account:</span>
+                <span>{employee.bank_account_no || 'N/A'}</span>
+            </div>
+
+            <div className="flex justify-between items-center text-gray-700 dark:text-gray-300 text-base">
+                <span className="font-medium">Salary:</span>
+                <span>${employee.salary ? employee.salary.toFixed(2) : '0.00'}</span>
+            </div>
+
+            <div className="flex space-x-2 pt-2 border-t border-gray-200 dark:border-gray-600">
+                {/* Pay Button */}
+                <button
+                    className={`flex-1 flex items-center justify-center px-4 py-2 rounded-md font-semibold transition-colors duration-200 shadow-md ${employee.isVerified ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-400 text-gray-700 cursor-not-allowed'}`}
+                    disabled={!employee.isVerified || makePaymentRequestMutation.isLoading}
+                    title={employee.isVerified ? 'Pay Salary' : 'Not verified, cannot pay salary'}
+                    onClick={() => handlePay(employee)}
+                >
+                    <FaMoneyBillWave className="mr-2" /> Pay
+                </button>
+                {/* Details Button */}
+                <button
+                    className="flex-1 flex items-center justify-center bg-purple-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-purple-700 transition-colors duration-200 shadow-md"
+                    title="View Details"
+                    onClick={() => handleDetails(employee.uid)}
+                >
+                    <FaInfoCircle className="mr-2" /> Details
+                </button>
+            </div>
+        </div>
+    ), [
         handleToggleVerified, toggleVerifiedMutation.isLoading,
         handlePay, makePaymentRequestMutation.isLoading,
         handleDetails
@@ -288,21 +367,52 @@ const EmployeeList = () => {
         <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-gray-900 dark:text-white">
             <h2 className="text-3xl font-bold mb-6 text-center">Employee List</h2>
 
-            <ReusableTable
-                columns={employeeListColumns}
-                data={currentEmployees}
-                rowKey="_id"
-                renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No employees found.</p>}
-            />
+            <div className="flex justify-end mb-4">
+                <button
+                    onClick={toggleViewMode}
+                    className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 shadow-md"
+                >
+                    {viewMode === 'table' ? (
+                        <>
+                            <FaThLarge className="mr-2" /> Show Cards
+                        </>
+                    ) : (
+                        <>
+                            <FaTable className="mr-2" /> Show Table
+                        </>
+                    )}
+                </button>
+            </div>
 
-            {/* Pagination Component */}
-            <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-                itemsPerPage={itemsPerPage}
-                totalItems={employees.length}
-            />
+            {employees.length === 0 ? (
+                <p className="text-center text-gray-600 dark:text-gray-400">No employees found.</p>
+            ) : (
+                <>
+                    {viewMode === 'table' ? (
+                        <ReusableTable
+                            columns={employeeListColumns}
+                            data={currentEmployees}
+                            rowKey="_id"
+                            renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No employees found for this page.</p>}
+                        />
+                    ) : (
+                        <ReusableCard
+                            data={currentEmployees}
+                            rowKey="_id"
+                            renderItem={renderEmployeeCard} 
+                        />
+                    )}
+
+                    {/* Pagination Component */}
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        itemsPerPage={itemsPerPage}
+                        totalItems={employees.length}
+                    />
+                </>
+            )}
 
             {/* Pay Modal */}
             {isPayModalOpen && (

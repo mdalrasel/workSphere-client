@@ -4,10 +4,11 @@ import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import useUserRole from '../../hooks/useUserRole';
-import { FaTrashAlt, FaUserFriends, FaUserShield, FaUserTie, FaFireAlt, FaFire } from 'react-icons/fa';
+import { FaTrashAlt, FaUserFriends, FaUserShield, FaUserTie, FaFireAlt, FaFire, FaTable, FaThLarge } from 'react-icons/fa'; 
 import LoadingSpinner from '../../utils/LoadingSpinner';
-import ReusableTable from '../../utils/ReusableTable';
 import Pagination from '../../utils/Pagination';
+import ReusableTable from '../../utils/ReusableTable';
+import ReusableCard from '../../components/cards/ReusableCard';
 
 const ManageUsers = () => {
     const { user, loading: authLoading } = useAuth();
@@ -15,9 +16,13 @@ const ManageUsers = () => {
     const queryClient = useQueryClient();
     const { role: loggedInUserRole, isLoading: roleLoading } = useUserRole();
 
-    
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10; 
+    const itemsPerPage = 9; 
+    const [viewMode, setViewMode] = useState('table'); 
+
+    const toggleViewMode = useCallback(() => {
+        setViewMode((prevMode) => (prevMode === 'table' ? 'card' : 'table'));
+    }, []);
 
     // 1. Fetch all users from the server
     const { data: users = [], isLoading: usersLoading, error: usersError} = useQuery({
@@ -33,17 +38,14 @@ const ManageUsers = () => {
         return users; 
     }, [users]);
 
-   
     const totalPages = Math.ceil(allUsers.length / itemsPerPage);
 
-    
     const currentUsers = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         return allUsers.slice(startIndex, endIndex);
     }, [allUsers, currentPage, itemsPerPage]);
 
-    
     const handlePageChange = useCallback((pageNumber) => {
         setCurrentPage(pageNumber);
     }, []);
@@ -282,6 +284,7 @@ const ManageUsers = () => {
         }
     }, []); 
 
+    // Columns for ReusableTable
     const manageUsersColumns = useMemo(() => [
         {
             header: 'Photo & Name',
@@ -367,6 +370,73 @@ const ManageUsers = () => {
     ]);
 
 
+    const renderUserCard = useCallback((userItem) => (
+        <div className="flex flex-col space-y-4">
+            <div className="flex items-center">
+                <img
+                    src={userItem.photoURL || "https://i.ibb.co/XZfsjds7/Profile.png"}
+                    alt={userItem.name || 'User'}
+                    className="w-12 h-12 rounded-full object-cover mr-4 border border-gray-300 dark:border-gray-600"
+                />
+                <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{userItem.name || 'N/A'}</h3>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{userItem.email || 'N/A'}</p>
+                </div>
+            </div>
+            
+            <div className="flex items-center text-gray-700 dark:text-gray-300 text-base">
+                <span className="font-medium mr-2">Role:</span> {getRoleIcon(userItem.role)} <span className="capitalize">{userItem.role || 'N/A'}</span>
+            </div>
+
+            <div className="flex flex-col space-y-3 pt-2 border-t border-gray-200 dark:border-gray-600">
+                {/* Role Change Dropdown */}
+                <div className="flex items-center gap-2">
+                    <label htmlFor={`role-select-${userItem._id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">Change Role:</label>
+                    <select
+                        id={`role-select-${userItem._id}`}
+                        className="flex-grow p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                        value={userItem.role || ''}
+                        onChange={(event) => handleRoleChange(userItem, event)}
+                        disabled={updateRoleMutation.isLoading || userItem.email === user?.email}
+                        title={userItem.email === user?.email ? "You cannot change your own role" : "Change user role"}
+                    >
+                        <option value="Employee">Employee</option>
+                        <option value="HR">HR</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+
+                {/* Toggle Worksheet Status Button */}
+                <button
+                    className={`${userItem.isActiveWorkSheet ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'} text-white px-4 py-2 rounded-md font-semibold transition-colors duration-200 shadow-md flex items-center justify-center w-full`}
+                    title={userItem.isActiveWorkSheet ? "Deactivate Worksheet" : "Activate Worksheet"}
+                    onClick={() => handleToggleWorksheetStatus(userItem)}
+                    disabled={toggleWorksheetStatusMutation.isLoading || userItem.email === user?.email || userItem.role !== 'Employee'}
+                >
+                    {userItem.isActiveWorkSheet ? <FaFireAlt className="mr-2" /> : <FaFire className="mr-2" />}
+                    {userItem.isActiveWorkSheet ? 'Deactivate Worksheet' : 'Activate Worksheet'}
+                </button>
+
+                {/* Delete User Button */}
+                <button
+                    className="bg-red-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-red-600 transition-colors duration-200 shadow-md flex items-center justify-center w-full"
+                    title="Delete User"
+                    onClick={() => handleDeleteUser(userItem._id, userItem.name, userItem.email)}
+                    disabled={deleteUserMutation.isLoading || userItem.email === user?.email}
+                >
+                    <FaTrashAlt className="mr-2" /> Delete User
+                </button>
+            </div>
+        </div>
+    ), [
+        user?.email, 
+        getRoleIcon, 
+        handleRoleChange, updateRoleMutation.isLoading, 
+        handleDeleteUser, deleteUserMutation.isLoading,
+        handleToggleWorksheetStatus, toggleWorksheetStatusMutation.isLoading
+    ]);
+
+
     if (authLoading || usersLoading || roleLoading) {
         return (
             <LoadingSpinner />
@@ -395,16 +465,41 @@ const ManageUsers = () => {
         <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md text-gray-900 dark:text-white">
             <h2 className="text-3xl font-bold mb-6 text-center">Manage Users</h2>
 
+            <div className="flex justify-end mb-4">
+                <button
+                    onClick={toggleViewMode}
+                    className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 shadow-md"
+                >
+                    {viewMode === 'table' ? (
+                        <>
+                            <FaThLarge className="mr-2" /> Show Cards
+                        </>
+                    ) : (
+                        <>
+                            <FaTable className="mr-2" /> Show Table
+                        </>
+                    )}
+                </button>
+            </div>
+
             {allUsers.length === 0 ? (
                 <p className="text-center text-gray-600 dark:text-gray-400">No users found.</p>
             ) : (
                 <>
-                    <ReusableTable
-                        columns={manageUsersColumns}
-                        data={currentUsers} 
-                        rowKey="_id"
-                        renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No users found for this page.</p>}
-                    />
+                    {viewMode === 'table' ? (
+                        <ReusableTable
+                            columns={manageUsersColumns}
+                            data={currentUsers} 
+                            rowKey="_id"
+                            renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No users found for this page.</p>}
+                        />
+                    ) : (
+                        <ReusableCard
+                            data={currentUsers} 
+                            rowKey="_id"
+                            renderItem={renderUserCard} 
+                        />
+                    )}
                     
                     <Pagination
                         currentPage={currentPage}
