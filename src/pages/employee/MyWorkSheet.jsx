@@ -45,9 +45,6 @@ const MyWorkSheet = () => {
 
     const isWorkSheetActive = currentUserDetails?.isActiveWorkSheet !== true;
 
-    console.log("Current User Details:", currentUserDetails);
-    console.log("Is Worksheet Active:", isWorkSheetActive);
-
 
     // 2. Fetch Worksheets for the current user (filtered by month/year)
     const { data: worksheets = [], isLoading: isWorksheetsLoading, error: worksheetsError } = useQuery({

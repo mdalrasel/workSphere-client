@@ -24,9 +24,7 @@ const UserProfile = () => {
         queryKey: ['user-profile', user?.email],
         enabled: !!user?.email && !authLoading,
         queryFn: async () => {
-            console.log("Fetching user profile for email:", user.email);
             const res = await axiosSecure.get(`/users?email=${user.email}`);
-            console.log("User profile fetched:", res.data);
             return res.data;
         },
         onError: (err) => {
@@ -40,14 +38,12 @@ const UserProfile = () => {
             setValue('name', userData.name || user?.displayName || '');
             setValue('designation', userData.designation || '');
             setValue('bank_account_no', userData.bank_account_no || '');
-            console.log("Form fields set with user data:", userData);
         }
     }, [userData, userLoading, user, setValue]);
 
     const updateUserMutation = useMutation({
         mutationFn: async (updatedProfileData) => {
             let photoUrlToSave = userData.photoURL || user?.photoURL || "https://i.ibb.co/2kRZ3mZ/default-user.png";
-            console.log("Initial photo URL to save:", photoUrlToSave);
 
             if (updatedProfileData.imageFile && updatedProfileData.imageFile[0]) {
                 if (!imgbbApiKey) {
@@ -71,18 +67,13 @@ const UserProfile = () => {
                             'content-type': 'multipart/form-data',
                         },
                     });
-                    console.log("ImgBB response status:", imgbbRes.status);
-                    console.log("ImgBB response data:", imgbbRes.data);
                     
                     if (imgbbRes.data.success) {
                         photoUrlToSave = imgbbRes.data.data.display_url;
-                        console.log("Image uploaded successfully. New photo URL:", photoUrlToSave);
                     } else {
-                        console.error("ImgBB upload failed, response was not successful:", imgbbRes.data);
                         throw new Error(`Image upload failed: ${imgbbRes.data.error?.message || 'ImgBB response not successful'}`);
                     }
                 } catch (imgError) {
-                    console.error("Error during image upload to ImgBB:", imgError);
                     Swal.fire({
                         icon: "error",
                         title: "Image Upload Failed",
@@ -103,7 +94,6 @@ const UserProfile = () => {
                 designation: updatedProfileData.designation,
                 bank_account_no: updatedProfileData.bank_account_no,
             };
-            console.log("Sending payload to backend for user update:", payloadToSend);
 
             const res = await axiosSecure.put(`/users/${user.email}`, payloadToSend);
             console.log("Backend update response:", res.data);
@@ -124,10 +114,8 @@ const UserProfile = () => {
             queryClient.invalidateQueries(['all-users-admin']);
             queryClient.invalidateQueries(['all-users-for-payment-history']);
             queryClient.invalidateQueries(['all-users-for-progress']);
-            console.log("Profile update successful. Queries invalidated.");
         },
         onError: (error) => {
-            console.error("Profile update mutation failed:", error);
             Swal.fire({
                 icon: "error",
                 title: "Profile Update Failed",
@@ -141,13 +129,11 @@ const UserProfile = () => {
             // This will run regardless of success or failure
             setIsUpdatingProfile(false); 
             setIsEditing(false); 
-            console.log("Editing mode and update loading reset.");
         }
     });
 
     const onSubmit = (data) => {
         setIsUpdatingProfile(true); 
-        console.log("Form submitted with data:", data);
         updateUserMutation.mutate(data);
     };
 
