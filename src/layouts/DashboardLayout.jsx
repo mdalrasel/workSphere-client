@@ -26,7 +26,7 @@ const DashboardLayout = () => {
             <div
                 className={`fixed inset-y-0 left-0 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
                 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 
-                bg-gray-800 text-white min-w-64 z-50 min-h-screen overflow-y-auto pb-20`}
+                bg-gray-800 text-white min-w-72 z-50 min-h-screen overflow-y-auto pb-20`}
             >
                 <Sidebar />
             </div>
@@ -51,7 +51,7 @@ const DashboardLayout = () => {
                 </div>
 
                 
-                <div className="flex-1 h-screen overflow-y-auto overflow-x-auto px-4 py-6 bg-gray-100 dark:bg-gray-900">
+                <div className="flex-1 h-screen overflow-y-auto  overflow-x-auto px-4 py-6 bg-gray-100 dark:bg-gray-900">
                     <Outlet />
                 </div>
             </div>

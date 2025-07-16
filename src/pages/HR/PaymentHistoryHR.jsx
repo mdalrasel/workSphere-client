@@ -1,11 +1,13 @@
-import React, { useMemo, useState, useCallback } from 'react'; 
+import React, { useMemo, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import useAxiosSecure from '../../hooks/useAxiosSecure';
 import { useForm } from 'react-hook-form';
 import LoadingSpinner from '../../utils/LoadingSpinner';
 import ReusableTable from '../../utils/ReusableTable';
+import ReusableCard from '../../components/cards/ReusableCard'; 
 import Pagination from '../../utils/Pagination';
+import { FaTable, FaThLarge } from 'react-icons/fa'; 
 
 const PaymentHistoryHR = () => {
     const { loading: authLoading, user } = useAuth();
@@ -19,12 +21,17 @@ const PaymentHistoryHR = () => {
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10; // Items per page for the table
+    const itemsPerPage = 9;
+    const [viewMode, setViewMode] = useState('table'); 
+
+    const toggleViewMode = useCallback(() => {
+        setViewMode((prevMode) => (prevMode === 'table' ? 'card' : 'table'));
+    }, []);
 
     // 1. Fetch all users (for employee name lookup)
     const { data: users = [], isLoading: usersLoading, error: usersError } = useQuery({
         queryKey: ['all-users-for-payment-history-hr'],
-        enabled: !authLoading, 
+        enabled: !authLoading,
         queryFn: async () => {
             const res = await axiosSecure.get('/users');
             return res.data;
@@ -44,7 +51,7 @@ const PaymentHistoryHR = () => {
     // 2. Fetch all payments with filters
     const { data: payments = [], isLoading: paymentsLoading, error: paymentsError } = useQuery({
         queryKey: ['all-payment-history', employeeUidFilter, monthFilter, yearFilter],
-        enabled: !!user?.email && !authLoading, 
+        enabled: !!user?.email && !authLoading,
         queryFn: async () => {
             const params = new URLSearchParams();
             if (employeeUidFilter) params.append('employeeUid', employeeUidFilter);
@@ -64,9 +71,9 @@ const PaymentHistoryHR = () => {
 
         return [...payments].sort((a, b) => {
             if (a.year !== b.year) {
-                return b.year - a.year; 
+                return b.year - a.year;
             }
-            return monthOrder[b.month] - monthOrder[a.month]; 
+            return monthOrder[b.month] - monthOrder[a.month];
         });
     }, [payments]);
 
@@ -134,7 +141,32 @@ const PaymentHistoryHR = () => {
             dataClassName: 'text-gray-700 dark:text-gray-300',
             render: (payment) => payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : 'N/A',
         },
-    ], [employeeMap]); 
+    ], [employeeMap]);
+
+    // renderItem function for ReusableCard
+    const renderPaymentHRCard = useCallback((paymentItem) => (
+        <div className="flex flex-col space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {employeeMap[paymentItem.employeeUid] || paymentItem.employeeName || 'N/A'}
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300">
+                <span className="font-medium">Email:</span> {paymentItem.employeeEmail || 'N/A'}
+            </p>
+            <p className="text-gray-700 dark:text-gray-300">
+                <span className="font-medium">Amount:</span> ${paymentItem.amount ? paymentItem.amount.toFixed(2) : '0.00'}
+            </p>
+            <p className="text-gray-700 dark:text-gray-300">
+                <span className="font-medium">Month:</span> {paymentItem.month} {paymentItem.year}
+            </p>
+            <p className="text-gray-700 dark:text-gray-300">
+                <span className="font-medium">Transaction ID:</span> {paymentItem.transactionId || 'N/A'}
+            </p>
+            <p className="text-gray-700 dark:text-gray-300">
+                <span className="font-medium">Payment Date:</span> {paymentItem.paymentDate ? new Date(paymentItem.paymentDate).toLocaleDateString() : 'N/A'}
+            </p>
+        </div>
+    ), [employeeMap]);
+
 
     if (authLoading || usersLoading || paymentsLoading || !user) {
         return (
@@ -155,7 +187,7 @@ const PaymentHistoryHR = () => {
             <h2 className="text-3xl font-bold mb-6 text-center">Payment History (HR View)</h2>
 
             {/* Filter Section */}
-            <form className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700">
+            <form className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-700 items-end">
                 <div>
                     <label htmlFor="employeeUid" className="block text-sm font-medium mb-1">Employee</label>
                     <select
@@ -193,19 +225,45 @@ const PaymentHistoryHR = () => {
                         ))}
                     </select>
                 </div>
+                {/* Toggle Button for View */}
+                <div className="w-full md:w-auto flex justify-end">
+                    <button
+                        onClick={toggleViewMode}
+                        type="button" 
+                        className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 shadow-md w-full justify-center md:w-auto"
+                    >
+                        {viewMode === 'table' ? (
+                            <>
+                                <FaThLarge className="mr-2" /> Show Cards
+                            </>
+                        ) : (
+                            <>
+                                <FaTable className="mr-2" /> Show Table
+                            </>
+                        )}
+                    </button>
+                </div>
             </form>
 
             {sortedPayments.length === 0 ? (
                 <p className="text-center text-gray-600 dark:text-gray-400">No payment records found for the selected filters.</p>
             ) : (
                 <>
-                    <ReusableTable
-                        columns={paymentHistoryHRColumns}
-                        data={currentPayments} 
-                        rowKey="_id"
-                        renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No payment records found for this page.</p>}
-                    />
-                    <Pagination 
+                    {viewMode === 'table' ? (
+                        <ReusableTable
+                            columns={paymentHistoryHRColumns}
+                            data={currentPayments}
+                            rowKey="_id"
+                            renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No payment records found for this page.</p>}
+                        />
+                    ) : (
+                        <ReusableCard
+                            data={currentPayments}
+                            rowKey="_id"
+                            renderItem={renderPaymentHRCard}
+                        />
+                    )}
+                    <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
                         onPageChange={handlePageChange}

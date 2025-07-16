@@ -2,7 +2,7 @@ import axios from 'axios';
 import useAuth from './useAuth';
 
 const axiosSecure = axios.create({
-    baseURL: 'https://work-sphere-server-alpha.vercel.app',
+    baseURL: 'http://localhost:3000',
     withCredentials: true,
 });
 

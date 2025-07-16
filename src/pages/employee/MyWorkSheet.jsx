@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import  { useState, useMemo, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
@@ -7,8 +7,10 @@ import useAxiosSecure from '../../hooks/useAxiosSecure';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ReusableTable from '../../utils/ReusableTable';
+import ReusableCard from '../../components/cards/ReusableCard'; 
 import Pagination from '../../utils/Pagination';
 import LoadingSpinner from '../../utils/LoadingSpinner';
+import { FaTable, FaThLarge } from 'react-icons/fa'; 
 
 const MyWorkSheet = () => {
     const { user, loading: authLoading } = useAuth();
@@ -24,7 +26,12 @@ const MyWorkSheet = () => {
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10; 
+    const itemsPerPage =9;
+    const [viewMode, setViewMode] = useState('table'); 
+
+    const toggleViewMode = useCallback(() => {
+        setViewMode((prevMode) => (prevMode === 'table' ? 'card' : 'table'));
+    }, []);
 
     const { data: currentUserDetails, isLoading: isUserStatusLoading, error: userStatusError } = useQuery({
         queryKey: ['currentUserDetails', user?.email],
@@ -36,7 +43,7 @@ const MyWorkSheet = () => {
         refetchOnWindowFocus: true,
     });
 
-    const isWorkSheetActive = currentUserDetails?.isActiveWorkSheet !== true; 
+    const isWorkSheetActive = currentUserDetails?.isActiveWorkSheet !== true;
 
     console.log("Current User Details:", currentUserDetails);
     console.log("Is Worksheet Active:", isWorkSheetActive);
@@ -45,7 +52,7 @@ const MyWorkSheet = () => {
     // 2. Fetch Worksheets for the current user (filtered by month/year)
     const { data: worksheets = [], isLoading: isWorksheetsLoading, error: worksheetsError } = useQuery({
         queryKey: ['my-work-sheets', user?.uid, selectedMonth, selectedYear],
-        enabled: !!user?.uid && !authLoading, 
+        enabled: !!user?.uid && !authLoading,
         queryFn: async () => {
             const params = { uid: user.uid };
             if (selectedMonth) params.month = selectedMonth;
@@ -74,7 +81,7 @@ const MyWorkSheet = () => {
             reset();
             setSelectedDate(new Date());
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
-            setCurrentPage(1); 
+            setCurrentPage(1);
         },
         onError: (error) => {
             Swal.fire({
@@ -104,7 +111,7 @@ const MyWorkSheet = () => {
                 color: '#1f2937'
             });
             queryClient.invalidateQueries(['my-work-sheets', user?.uid, selectedMonth, selectedYear]);
-            setCurrentPage(1); 
+            setCurrentPage(1);
         },
         onError: (error) => {
             Swal.fire({
@@ -176,7 +183,7 @@ const MyWorkSheet = () => {
             submissionDate: new Date().toISOString(),
         };
         addWorkMutation.mutate(newWork);
-    }, [addWorkMutation, isWorkSheetActive, selectedDate, user]); 
+    }, [addWorkMutation, isWorkSheetActive, selectedDate, user]);
 
     const handleDelete = useCallback((id) => {
         if (!isWorkSheetActive) {
@@ -227,7 +234,7 @@ const MyWorkSheet = () => {
         setValue('hours', work.hours);
         setSelectedDate(new Date(work.date));
         setIsEditModalOpen(true);
-    }, [isWorkSheetActive, setValue]); 
+    }, [isWorkSheetActive, setValue]);
 
     // Update form submission handler
     const onUpdateSubmit = useCallback((data) => {
@@ -254,7 +261,7 @@ const MyWorkSheet = () => {
             year: selectedDate.getFullYear(),
         };
         updateWorkMutation.mutate(updatedWork);
-    }, [editingWork, isWorkSheetActive, selectedDate, updateWorkMutation, user]); 
+    }, [editingWork, isWorkSheetActive, selectedDate, updateWorkMutation, user]);
 
     // Function to close modal
     const closeEditModal = useCallback(() => {
@@ -262,7 +269,7 @@ const MyWorkSheet = () => {
         setEditingWork(null);
         reset();
         setSelectedDate(new Date());
-    }, [reset]); 
+    }, [reset]);
 
     const months = useMemo(() => [
         "January", "February", "March", "April", "May", "June",
@@ -276,7 +283,7 @@ const MyWorkSheet = () => {
     const filteredWorksheets = useMemo(() => {
         let filtered = worksheets;
 
-       
+
         if (selectedMonth) {
             filtered = filtered.filter(work => work.month === selectedMonth);
         }
@@ -332,7 +339,7 @@ const MyWorkSheet = () => {
         {
             header: 'Actions',
             key: 'actions',
-            headerClassName: 'text-left', 
+            headerClassName: 'text-left',
             dataClassName: 'whitespace-nowrap text-sm font-medium',
             render: (work) => (
                 <>
@@ -353,7 +360,42 @@ const MyWorkSheet = () => {
                 </>
             ),
         },
-    ], [handleEdit, handleDelete, isWorkSheetActive]); 
+    ], [handleEdit, handleDelete, isWorkSheetActive]);
+
+    // renderItem function for ReusableCard
+    const renderWorksheetCard = useCallback((workItem) => (
+        <div className="flex flex-col space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Task: {workItem.task}
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300">
+                <span className="font-medium">Date:</span> {new Date(workItem.date).toLocaleDateString()}
+            </p>
+            <p className="text-gray-700 dark:text-gray-300">
+                <span className="font-medium">Hours:</span> {workItem.hours}
+            </p>
+            <p className="text-gray-700 dark:text-gray-300">
+                <span className="font-medium">Submitted On:</span> {new Date(workItem.submissionDate).toLocaleDateString()}
+            </p>
+            <div className="flex justify-end gap-2 mt-4">
+                <button
+                    className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200"
+                    onClick={() => handleEdit(workItem)}
+                    disabled={!isWorkSheetActive}
+                >
+                    Edit 🖊
+                </button>
+                <button
+                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200"
+                    onClick={() => handleDelete(workItem._id)}
+                    disabled={!isWorkSheetActive}
+                >
+                    Delete ❌
+                </button>
+            </div>
+        </div>
+    ), [handleEdit, handleDelete, isWorkSheetActive]);
+
 
     if (authLoading || isUserStatusLoading || !user?.uid) {
         return <LoadingSpinner />;
@@ -367,7 +409,7 @@ const MyWorkSheet = () => {
         );
     }
 
-   
+
     if (!isWorkSheetActive) {
         return (
             <div className="text-center py-10 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 rounded relative mx-auto my-10 max-w-xl" role="alert">
@@ -468,7 +510,7 @@ const MyWorkSheet = () => {
                             value={selectedMonth}
                             onChange={(e) => {
                                 setSelectedMonth(e.target.value);
-                                setCurrentPage(1); 
+                                setCurrentPage(1);
                             }}
                             className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                             disabled={!isWorkSheetActive}
@@ -497,18 +539,44 @@ const MyWorkSheet = () => {
                             ))}
                         </select>
                     </div>
+                    <div className="md:w-auto flex items-end">
+                        <button
+                            onClick={toggleViewMode}
+                            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 shadow-md w-full justify-center md:w-auto"
+                            disabled={!isWorkSheetActive}
+                        >
+                            {viewMode === 'table' ? (
+                                <>
+                                    <FaThLarge className="mr-2" /> Show Cards
+                                </>
+                            ) : (
+                                <>
+                                    <FaTable className="mr-2" /> Show Table
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 {filteredWorksheets.length === 0 ? (
                     <p className="text-center text-gray-600 dark:text-gray-400">No work records found for the selected filters.</p>
                 ) : (
                     <>
-                        <ReusableTable
-                            columns={myWorkSheetColumns}
-                            data={currentWorksheets} // Use paginated data
-                            rowKey="_id"
-                            renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No work records found for this page.</p>}
-                        />
+                        {viewMode === 'table' ? (
+                            <ReusableTable
+                                columns={myWorkSheetColumns}
+                                data={currentWorksheets} // Use paginated data
+                                rowKey="_id"
+                                renderEmpty={<p className="text-center text-gray-600 dark:text-gray-400">No work records found for this page.</p>}
+                            />
+                        ) : (
+                            <ReusableCard
+                                data={currentWorksheets}
+                                rowKey="_id"
+                                renderItem={renderWorksheetCard}
+                            />
+                        )}
+
                         <Pagination
                             currentPage={currentPage}
                             totalPages={totalPages}
@@ -532,7 +600,7 @@ const MyWorkSheet = () => {
                             &times;
                         </button>
                         <form onSubmit={handleSubmit(onUpdateSubmit)} className="grid grid-cols-1 gap-4">
-                          
+
                             <div>
                                 <label htmlFor="editTask" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Task Description</label>
                                 <select
