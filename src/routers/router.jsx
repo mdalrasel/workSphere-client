@@ -22,6 +22,7 @@ import Payroll from "../pages/admin/Payroll";
 import AdminDashboardHome from "../pages/admin/AdminDashboardHome";
 import EmployeeDashboardHome from "../pages/employee/EmployeeDashboardHome";
 import ErrorPage from "../utils/ErrorPage";
+import About from "../pages/home/about/About";
 
 
 export const router = createBrowserRouter([
@@ -33,7 +34,8 @@ export const router = createBrowserRouter([
     children: [
       {index: true, Component: Home,handle: { title: "Home | workSphere" }},
       { path: 'contact',Component: ContactUs,handle: { title: "ContactUs | workSphere" }},
-      {path: 'features',Component: Features,handle: { title: "Features | workSphere" }}
+      {path: 'features',Component: Features,handle: { title: "Features | workSphere" }},
+      {path: 'about',Component: About,handle: { title: "About | workSphere" }}
     ]
   },
   {

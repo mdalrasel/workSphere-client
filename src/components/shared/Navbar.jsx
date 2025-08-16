@@ -37,12 +37,13 @@ const Navbar = () => {
     const navLink = (
         <>
             <li><NavLink to="/" onClick={() => setMenuOpen(false)}>Home</NavLink></li>
+            <li><NavLink to="/features" onClick={() => setMenuOpen(false)}>Features</NavLink></li>
+            <li><NavLink to="/about" onClick={() => setMenuOpen(false)}>About</NavLink></li>
             <li><NavLink to="/contact" onClick={() => setMenuOpen(false)}>Contact Us</NavLink></li>
             {
                 user &&
                 <li><NavLink to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</NavLink></li>
             }
-            <li><NavLink to="/features" onClick={() => setMenuOpen(false)}>Features</NavLink></li>
         </>
     );
 
