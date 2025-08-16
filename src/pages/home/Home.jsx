@@ -2,10 +2,11 @@ import Banner from "./banner/Banner";
 import EmployeeStats from "./employeeStats/EmployeeStats";
 import HowItWorks from "./howItWorks/HowItWorks";
 import LatestNews from "./latestNews/LatestNews";
+import QuickActions from "./quickActions/QuickActions";
 import Services from "./services/Services";
 import TaskOverview from "./TaskOverview/TaskOverview";
 import Testimonials from "./testimonials/Testimonials";
-import QuickActions from "./UpcomingEvents/UpcomingEvents";
+import UpcomingEvents from "./UpcomingEvents/UpcomingEvents";
 import WhyChooseUs from "./whyChooseUs/WhyChooseUs";
 
 
@@ -19,6 +20,7 @@ const Home = () => {
             <LatestNews />
             <EmployeeStats />
             <TaskOverview />
+            <UpcomingEvents />
             <QuickActions />
             <Testimonials />
         </div>

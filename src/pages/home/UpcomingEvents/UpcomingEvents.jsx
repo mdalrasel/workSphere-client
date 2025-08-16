@@ -8,6 +8,12 @@ const UpcomingEvents = () => {
 
   useEffect(() => {
     AOS.init({ once: true, duration: 800, easing: 'ease-out' });
+    // In a real application, fetch upcoming events from an API
+    // fetch('/api/upcoming-events')
+    //   .then(res => res.json())
+    //   .then(data => setEvents(data));
+
+    // Using mock data for demonstration
     setEvents([
       {
         id: 1,
